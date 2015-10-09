@@ -1,0 +1,22 @@
+# Uncomment this line to define a global platform for your project
+# platform :ios, '6.0'
+
+target 'Smart Thermometer' do
+pod 'Parse'
+end
+
+target 'Smart ThermometerTests' do
+
+end
+
+target 'Smart ThermometerUITests' do
+
+end
+
+target 'Current Temperature' do
+
+end
+
+target 'Current Temperature Extension' do
+
+end
