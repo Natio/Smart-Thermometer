@@ -1,3 +1,5 @@
+var FORECAST_ID = "faJZwaD5nj"
+var FORECAST_KERNEL = [0.2, 0.2, 0.2, 0.2, 0.2];
 
 function createHourRecord(year,month,day,h, callback){
   var Hour = Parse.Object.extend("Hour");
@@ -21,6 +23,39 @@ function createHourRecord(year,month,day,h, callback){
     }
   });
 
+}
+
+function getExpTemp(temperatures){
+  var expTemp = 0;
+
+  for(i = 0; i < temperatures.length; i++){
+    expTemp += FORECAST_KERNEL[i] * temperatures[i];
+  }
+
+  return expTemp;
+}
+
+function updateHourlyForecast(h){
+  var Hour = Parse.Object.extend("Hour");
+  var hour = new Hour();
+  var query = new Parse.Query(Hour);
+  query.equalTo("hour", h);
+  query.descending("createdAt");
+  query.limit(FORECAST_KERNEL.length);
+  query.find({
+    success: function(results) {
+      if(results.length > 0){
+        var Forecast = Parse.Object.extend("Forecast");
+        var forecast = new Forecast();
+        forecast.id = FORECAST_ID;
+        forecast.set("expTemp1H", getExpTemp(results));
+        forecast.save();
+      }
+    },
+    error: function(error) {
+      callback(null, error);
+    }
+  });
 }
 
 function findOrCreateHourRecord(year, month, day, h, callback){
@@ -91,6 +126,8 @@ Parse.Cloud.afterSave("Temperatures", function(request, response) {
       }
     });
   }
+
+  updateHourlyForecast(hour);
 );
 
 });
