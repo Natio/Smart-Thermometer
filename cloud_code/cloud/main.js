@@ -1,5 +1,6 @@
 var FORECAST_ID = "faJZwaD5nj"
 var FORECAST_KERNEL = [0.2, 0.2, 0.2, 0.2, 0.2];
+var current_forecast_hour = -1;
 
 function createHourRecord(year,month,day,h, callback){
   var Hour = Parse.Object.extend("Hour");
@@ -49,7 +50,15 @@ function updateHourlyForecast(h){
         var forecast = new Forecast();
         forecast.id = FORECAST_ID;
         forecast.set("expTemp1H", getExpTemp(results));
-        forecast.save();
+        forecast.set("hour", h);
+        forecast.save((null, {
+          success: function(newObj) {
+            current_forecast_hour = h;
+          },
+          error: function(newObj, error) {
+            console.error('Failed to update forecast: ' + error.message);
+          }
+        });
       }
     },
     error: function(error) {
@@ -127,7 +136,9 @@ Parse.Cloud.afterSave("Temperatures", function(request, response) {
     });
   }
 
-  updateHourlyForecast(hour);
+  if(current_forecast_hour != (hour + 1) % 24){
+    updateHourlyForecast((hour + 1) % 24);
+  }
 );
 
 });
