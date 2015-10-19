@@ -23,6 +23,7 @@
 		52825F021BC83DE100973A31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52825F011BC83DE100973A31 /* Assets.xcassets */; };
 		52825F061BC83DE100973A31 /* Current Temperature.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 52825EEA1BC83DE100973A31 /* Current Temperature.app */; };
 		52825F111BC83F5100973A31 /* STRowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 52825F101BC83F5100973A31 /* STRowController.m */; settings = {ASSET_TAGS = (); }; };
+		9CB1CA9E1BD5AE4C00955F96 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9CB1CA9D1BD5AE4C00955F96 /* Settings.bundle */; settings = {ASSET_TAGS = (); }; };
 		C3127AD7816F9221BC232D39 /* libPods-Smart Thermometer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 77F0BBA26A52489A9397D766 /* libPods-Smart Thermometer.a */; };
 /* End PBXBuildFile section */
 
@@ -114,6 +115,7 @@
 		52825F101BC83F5100973A31 /* STRowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STRowController.m; sourceTree = "<group>"; };
 		5AFE985F25C8BAD42417C07A /* Pods-Smart Thermometer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Smart Thermometer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Smart Thermometer/Pods-Smart Thermometer.debug.xcconfig"; sourceTree = "<group>"; };
 		77F0BBA26A52489A9397D766 /* libPods-Smart Thermometer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Smart Thermometer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9CB1CA9D1BD5AE4C00955F96 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		B5DC7451091443C2DFB85993 /* Pods-Smart Thermometer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Smart Thermometer.release.xcconfig"; path = "Pods/Target Support Files/Pods-Smart Thermometer/Pods-Smart Thermometer.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -161,6 +163,7 @@
 		52825EA91BC83DB500973A31 = {
 			isa = PBXGroup;
 			children = (
+				9CB1CA9D1BD5AE4C00955F96 /* Settings.bundle */,
 				52825EB41BC83DB500973A31 /* Smart Thermometer */,
 				52825ECE1BC83DB500973A31 /* Smart ThermometerTests */,
 				52825ED91BC83DB500973A31 /* Smart ThermometerUITests */,
@@ -409,6 +412,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9CB1CA9E1BD5AE4C00955F96 /* Settings.bundle in Resources */,
 				52825EC51BC83DB500973A31 /* LaunchScreen.storyboard in Resources */,
 				52825EC21BC83DB500973A31 /* Assets.xcassets in Resources */,
 				52825EC01BC83DB500973A31 /* Main.storyboard in Resources */,
