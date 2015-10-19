@@ -51,7 +51,7 @@ function updateHourlyForecast(h){
         forecast.id = FORECAST_ID;
         forecast.set("expTemp1H", getExpTemp(results));
         forecast.set("hour", h);
-        forecast.save((null, {
+        forecast.save(null, {
           success: function(newObj) {
             current_forecast_hour = h;
           },
@@ -134,11 +134,9 @@ Parse.Cloud.afterSave("Temperatures", function(request, response) {
         console.error('Failed to create new object, with error code: ' + error.message);
       }
     });
-  }
+  });
 
   if(current_forecast_hour != (hour + 1) % 24){
     updateHourlyForecast((hour + 1) % 24);
   }
-);
-
 });

@@ -27,4 +27,7 @@ Temporary Items
 .apdisk
 
 # Tools
-.exe
+*.exe
+
+#Local dirs
+parse_cc
