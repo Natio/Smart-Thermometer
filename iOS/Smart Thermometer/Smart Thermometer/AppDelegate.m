@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#import "ViewController.h"
 #import <Parse/Parse.h>
 #import <WatchConnectivity/WatchConnectivity.h>
 
@@ -47,12 +48,18 @@
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [Parse setApplicationId:
-                  clientKey:];
+    [Parse setApplicationId:@"GkfQgBEWhTwEWe6edrUDDt0sZ9DLPubO5HYrHBh7"
+                  clientKey:@"LeHrMeZQY2EfuDkQgfx8iyQL6NAS9uswZFFtpwcd"];
     // Override point for customization after application launch.
     self.session = [WCSession defaultSession];
     self.session.delegate = self;
     [self.session activateSession];
+
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:[NSBundle mainBundle]];
+    UIViewController *vc =[storyboard instantiateInitialViewController];
+    self.window.rootViewController = vc;
+    [self.window makeKeyAndVisible];
+    
     return YES;
 }
 

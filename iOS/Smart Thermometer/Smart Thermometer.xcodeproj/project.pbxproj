@@ -23,6 +23,9 @@
 		52825F021BC83DE100973A31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52825F011BC83DE100973A31 /* Assets.xcassets */; };
 		52825F061BC83DE100973A31 /* Current Temperature.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 52825EEA1BC83DE100973A31 /* Current Temperature.app */; };
 		52825F111BC83F5100973A31 /* STRowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 52825F101BC83F5100973A31 /* STRowController.m */; settings = {ASSET_TAGS = (); }; };
+		9CA16FE81BDD3E58009FADF5 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CA16FE71BDD3E58009FADF5 /* QuartzCore.framework */; };
+		9CA16FEA1BDD3E80009FADF5 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CA16FE91BDD3E80009FADF5 /* Accelerate.framework */; };
+		9CA170041BDD4BA5009FADF5 /* libCorePlot-CocoaTouch.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CA170031BDD4BA5009FADF5 /* libCorePlot-CocoaTouch.a */; };
 		9CB1CA9E1BD5AE4C00955F96 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9CB1CA9D1BD5AE4C00955F96 /* Settings.bundle */; settings = {ASSET_TAGS = (); }; };
 		C3127AD7816F9221BC232D39 /* libPods-Smart Thermometer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 77F0BBA26A52489A9397D766 /* libPods-Smart Thermometer.a */; };
 /* End PBXBuildFile section */
@@ -115,6 +118,10 @@
 		52825F101BC83F5100973A31 /* STRowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STRowController.m; sourceTree = "<group>"; };
 		5AFE985F25C8BAD42417C07A /* Pods-Smart Thermometer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Smart Thermometer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Smart Thermometer/Pods-Smart Thermometer.debug.xcconfig"; sourceTree = "<group>"; };
 		77F0BBA26A52489A9397D766 /* libPods-Smart Thermometer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Smart Thermometer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9CA16FE71BDD3E58009FADF5 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		9CA16FE91BDD3E80009FADF5 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		9CA170011BDD481D009FADF5 /* libCorePlot-CocoaTouch.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libCorePlot-CocoaTouch.a"; sourceTree = "<group>"; };
+		9CA170031BDD4BA5009FADF5 /* libCorePlot-CocoaTouch.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libCorePlot-CocoaTouch.a"; path = "Pods/libCorePlot-CocoaTouch.a"; sourceTree = "<group>"; };
 		9CB1CA9D1BD5AE4C00955F96 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		B5DC7451091443C2DFB85993 /* Pods-Smart Thermometer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Smart Thermometer.release.xcconfig"; path = "Pods/Target Support Files/Pods-Smart Thermometer/Pods-Smart Thermometer.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -124,6 +131,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9CA170041BDD4BA5009FADF5 /* libCorePlot-CocoaTouch.a in Frameworks */,
+				9CA16FEA1BDD3E80009FADF5 /* Accelerate.framework in Frameworks */,
+				9CA16FE81BDD3E58009FADF5 /* QuartzCore.framework in Frameworks */,
 				C3127AD7816F9221BC232D39 /* libPods-Smart Thermometer.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -155,6 +165,10 @@
 		23944A729DFE9D7EA05C7098 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				9CA170031BDD4BA5009FADF5 /* libCorePlot-CocoaTouch.a */,
+				9CA170011BDD481D009FADF5 /* libCorePlot-CocoaTouch.a */,
+				9CA16FE91BDD3E80009FADF5 /* Accelerate.framework */,
+				9CA16FE71BDD3E58009FADF5 /* QuartzCore.framework */,
 				77F0BBA26A52489A9397D766 /* libPods-Smart Thermometer.a */,
 			);
 			name = Frameworks;
@@ -614,6 +628,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -650,6 +665,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -660,8 +676,20 @@
 			baseConfigurationReference = 5AFE985F25C8BAD42417C07A /* Pods-Smart Thermometer.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"${PODS_ROOT}/Headers/Public\"",
+					"\"${PODS_ROOT}/Headers/Public/Bolts\"",
+					"\"${PODS_ROOT}/Headers/Public/Parse\"",
+					"\"${PODS_ROOT}/Headers/Public/CorePlotHeaders\"",
+				);
 				INFOPLIST_FILE = "Smart Thermometer/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Pods",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "it.natium.Smart-Thermometer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -672,8 +700,20 @@
 			baseConfigurationReference = B5DC7451091443C2DFB85993 /* Pods-Smart Thermometer.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"${PODS_ROOT}/Headers/Public\"",
+					"\"${PODS_ROOT}/Headers/Public/Bolts\"",
+					"\"${PODS_ROOT}/Headers/Public/Parse\"",
+					"\"${PODS_ROOT}/Headers/Public/CorePlotHeaders\"",
+				);
 				INFOPLIST_FILE = "Smart Thermometer/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Pods",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "it.natium.Smart-Thermometer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
