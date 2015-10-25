@@ -9,6 +9,8 @@
 #import "ViewController.h"
 #import <Parse/Parse.h>
 
+#define FAHRENHEIT_PREFERENCE 1
+
 @interface ViewController ()
 
 @property (nonatomic, weak) IBOutlet UILabel *outside_temp;
@@ -35,8 +37,20 @@
         if (object) {
             NSNumber *inside = object[@"inside"];
             NSNumber *outside = object[@"outside"];
-            self.inside_temp.text = [NSString stringWithFormat:@"%@C", inside];
-            self.outside_temp.text = [NSString stringWithFormat:@"%@C", outside];
+            
+            int userMeasureUnit = [[NSUserDefaults standardUserDefaults] integerForKey:@"measure_unit"];
+            NSString *measureUnitString;
+            
+            if(userMeasureUnit == FAHRENHEIT_PREFERENCE){
+                measureUnitString = @"°F";
+                inside = [NSNumber numberWithFloat:[inside floatValue] * 9.0/5.0 + 32];
+                outside = [NSNumber numberWithFloat:[outside floatValue] * 9.0/5.0 + 32];
+            }else{
+                measureUnitString = @"°C";
+            }
+            
+            self.inside_temp.text = [NSString stringWithFormat:@"%@%@", inside, measureUnitString];
+            self.outside_temp.text = [NSString stringWithFormat:@"%@%@", outside, measureUnitString];
         }
     }];
 }

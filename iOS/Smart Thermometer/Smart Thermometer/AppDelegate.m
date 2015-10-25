@@ -47,9 +47,35 @@
     
 }
 
+- (void)togglePushNotificationsFor:(UIApplication *)application {
+    BOOL pushNotificationsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"push_notifications"];
+    NSLog(@"Are push notifications enabled %s", pushNotificationsEnabled ? "true" : "false");
+    if(pushNotificationsEnabled){
+        // Register for Push Notitications
+        UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
+                                                        UIUserNotificationTypeBadge |
+                                                        UIUserNotificationTypeSound);
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
+                                                                                 categories:nil];
+        [application registerUserNotificationSettings:settings];
+        [application registerForRemoteNotifications];
+        NSLog(@"Registered for Push Notifications");
+    }else{
+        //Unregister for Push Notifications
+        [[UIApplication sharedApplication] unregisterForRemoteNotifications];
+        NSLog(@"Unregistered for Push Notifications");
+
+    }
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [Parse setApplicationId:@"GkfQgBEWhTwEWe6edrUDDt0sZ9DLPubO5HYrHBh7"
-                  clientKey:@"LeHrMeZQY2EfuDkQgfx8iyQL6NAS9uswZFFtpwcd"];
+    
+    [self registerUserDefaults];
+    
+    [self togglePushNotificationsFor:application];
+    
+    [Parse setApplicationId:
+                  clientKey:];
     // Override point for customization after application launch.
     self.session = [WCSession defaultSession];
     self.session.delegate = self;
@@ -61,6 +87,34 @@
     [self.window makeKeyAndVisible];
     
     return YES;
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    // Store the deviceToken in the current installation and save it to Parse.
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    [currentInstallation setDeviceTokenFromData:deviceToken];
+    [currentInstallation saveInBackground];
+}
+
+- (void)registerUserDefaults{
+    NSString *settingsBundle = [[NSBundle mainBundle] pathForResource:@"Settings" ofType:@"bundle"];
+    if(!settingsBundle) {
+        NSLog(@"Could not find Settings.bundle");
+        return;
+    }
+    
+    NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:[settingsBundle stringByAppendingPathComponent:@"Root.plist"]];
+    NSArray *preferences = [settings objectForKey:@"PreferenceSpecifiers"];
+    
+    NSMutableDictionary *defaultsToRegister = [[NSMutableDictionary alloc] initWithCapacity:[preferences count]];
+    for(NSDictionary *prefSpecification in preferences) {
+        NSString *key = [prefSpecification objectForKey:@"Key"];
+        if(key) {
+            [defaultsToRegister setObject:[prefSpecification objectForKey:@"DefaultValue"] forKey:key];
+        }
+    }
+    
+    [[NSUserDefaults standardUserDefaults] registerDefaults:defaultsToRegister];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {

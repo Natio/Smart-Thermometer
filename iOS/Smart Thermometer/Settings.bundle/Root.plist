@@ -20,7 +20,7 @@
 			<key>Key</key>
 			<string>measure_unit</string>
 			<key>DefaultValue</key>
-			<string>Celsius</string>
+			<real>0</real>
 			<key>Titles</key>
 			<array>
 				<string>Celsius</string>
