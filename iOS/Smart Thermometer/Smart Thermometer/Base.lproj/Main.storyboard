@@ -59,11 +59,12 @@
                     <connections>
                         <outlet property="inside_temp" destination="0ku-CT-ES9" id="Pl0-kJ-ipm"/>
                         <outlet property="outside_temp" destination="884-e5-xHZ" id="LOE-Gh-KAj"/>
+                        <outlet property="refresh_button" destination="gHT-l5-90F" id="Pbf-Eq-gaA"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="358" y="171"/>
+            <point key="canvasLocation" x="357.5" y="170.5"/>
         </scene>
     </scenes>
 </document>
