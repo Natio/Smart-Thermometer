@@ -51,21 +51,12 @@
 
 - (void)fetchWeather{
     NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/weather?q=dublin,ie&appid=%s", WEATHER_API_KEY];
-    NSURLRequest *request = [NSURLRequest requestWithURL:
-                             [NSURL URLWithString:URLString]];
-    
-    [[NSURLConnection alloc] initWithRequest:request delegate:self];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    NSMutableData *responseData = [[NSMutableData alloc] init];
-    [responseData appendData:data];
-    
-    NSString *responseString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
-    NSError *e = nil;
-    NSData *jsonData = [responseString dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:jsonData options: NSJSONReadingMutableContainers error: &e];
-    self.weather.text = [JSON valueForKeyPath:@"weather.main"][0];
+    [[NSURLSession sharedSession] dataTaskWithURL:[NSURL URLWithString:URLString]
+                                completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            NSError *e = nil;
+            NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options: NSJSONReadingMutableContainers error: &e];
+            self.weather.text = [JSON valueForKeyPath:@"weather.main"][0];
+    }];
 }
 
 - (void)refreshTemperatureData{
