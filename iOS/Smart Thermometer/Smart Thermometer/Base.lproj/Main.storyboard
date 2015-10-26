@@ -7,7 +7,7 @@
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="viewController" id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
@@ -65,6 +65,27 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="357.5" y="170.5"/>
+        </scene>
+        <!--Graph View Controller-->
+        <scene sceneID="Vyw-me-mKe">
+            <objects>
+                <viewController storyboardIdentifier="graphViewController" id="6Lr-gb-cj9" customClass="GraphViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="pkE-8E-bbk"/>
+                        <viewControllerLayoutGuide type="bottom" id="IgT-zH-pPd"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="oTY-go-BgV" customClass="CPTGraphHostingView">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <animations/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <connections>
+                        <outlet property="graphView" destination="oTY-go-BgV" id="Ja4-N5-KPn"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="16Q-S7-v60" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
         </scene>
     </scenes>
 </document>
