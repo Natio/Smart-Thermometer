@@ -10,6 +10,7 @@
 #import "ViewController.h"
 #import <Parse/Parse.h>
 
+
 #define VIEW_SPACING 10.0
 #define FAHRENHEIT_PREFERENCE 1
 
@@ -51,12 +52,13 @@
 
 - (void)fetchWeather{
     NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/weather?q=dublin,ie&appid=%s", WEATHER_API_KEY];
-    [[NSURLSession sharedSession] dataTaskWithURL:[NSURL URLWithString:URLString]
+    NSURLSessionDataTask *URLSessionDataTask = [[NSURLSession sharedSession] dataTaskWithURL:[NSURL URLWithString:URLString]
                                 completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
             NSError *e = nil;
             NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options: NSJSONReadingMutableContainers error: &e];
             self.weather.text = [JSON valueForKeyPath:@"weather.main"][0];
     }];
+    [URLSessionDataTask resume];
 }
 
 - (void)refreshTemperatureData{
