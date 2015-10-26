@@ -19,51 +19,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-//    CPTXYGraph *graph = [[CPTXYGraph alloc] initWithFrame:CGRectZero];
-//    graph.title = @"Daily Graph";
-//    graph.paddingLeft = 0;
-//    graph.paddingTop = 0;
-//    graph.paddingRight = 0;
-//    graph.paddingBottom = 0;
-//    // hide the axes
-//    CPTXYAxisSet *axes = (CPTXYAxisSet *)[graph axisSet];
-//    CPTMutableLineStyle *lineStyle = [[CPTMutableLineStyle alloc] init];
-//    lineStyle.lineWidth = 0;
-//    axes.xAxis.axisLineStyle = lineStyle;
-//    axes.yAxis.axisLineStyle = lineStyle;
-//    
-//    // add a pie plot
-//    CPTBarPlot *barPlot = [[CPTBarPlot alloc] init];
-//    
-//    CGFloat xMin = 0.0f;
-//    CGFloat xMax = 6.0f;
-//    CGFloat yMin = 0.0f;
-//    CGFloat yMax = 800.0f;
-//    
-//    CPTXYPlotSpace *plotSpace = (CPTXYPlotSpace *) graph.defaultPlotSpace;
-//    
-//    plotSpace.xRange = [CPTPlotRange plotRangeWithLocation:[NSNumber numberWithFloat:xMin] length:[NSNumber numberWithFloat:xMax]];
-//    plotSpace.yRange = [CPTPlotRange plotRangeWithLocation:[NSNumber numberWithFloat:yMin] length:[NSNumber numberWithFloat:yMax]];
-//    
-//    barPlot.dataSource = self;
-//    
-//    CPTMutableLineStyle *barLineStyle = [[CPTMutableLineStyle alloc] init];
-//    barLineStyle.lineColor = [CPTColor lightGrayColor];
-//    barLineStyle.lineWidth = 0.5;
-//    
-//    barPlot.barWidth = [NSNumber numberWithFloat:10.0];
-//    barPlot.barOffset = [NSNumber numberWithFloat:5.0];
-//    barPlot.lineStyle = barLineStyle;
-//
-//    [graph addPlot:barPlot];
-    
-    // add a pie plot
-//    CPTPieChart *pie = [[CPTPieChart alloc] init];
-//    pie.dataSource = self;
-//    pie.pieRadius = (self.view.frame.size.width * 0.9)/2;
-//    [graph addPlot:pie];
-//    
-//    self.graphView.hostedGraph = graph;
 }
 
 #pragma mark - Chart behavior
@@ -96,7 +51,7 @@
     titleStyle.fontSize = 16.0f;
     graph.titleTextStyle = titleStyle;
     graph.titlePlotAreaFrameAnchor = CPTRectAnchorTop;
-    graph.titleDisplacement = CGPointMake(0.0f, 10.0f);
+    graph.titleDisplacement = CGPointMake(0.0f, 22.0f);
     // 4 - Set padding for plot area
     [graph.plotAreaFrame setPaddingLeft:30.0f];
     [graph.plotAreaFrame setPaddingBottom:30.0f];

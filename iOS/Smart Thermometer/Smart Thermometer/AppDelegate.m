@@ -74,8 +74,8 @@
     
     [self togglePushNotificationsFor:application];
     
-    [Parse setApplicationId:
-                  clientKey:];
+    [Parse setApplicationId:@APPLICATION_ID
+                  clientKey:@CLIENT_KEY];
     // Override point for customization after application launch.
     self.session = [WCSession defaultSession];
     self.session.delegate = self;
