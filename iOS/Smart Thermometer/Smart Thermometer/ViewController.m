@@ -17,6 +17,7 @@
 
 @property (nonatomic, weak) IBOutlet UILabel *outside_temp;
 @property (nonatomic, weak) IBOutlet UILabel *inside_temp;
+@property (nonatomic, weak) IBOutlet UILabel *weather;
 @property (nonatomic, weak) IBOutlet UIButton *refresh_button;
 
 @end
@@ -30,6 +31,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self refreshTemperatureData];
+    
+    [self fetchWeather];
 
     //create the controller for the view related to the
     //temeperature history graph that has to be put below.
@@ -44,6 +47,25 @@
     
     [self.view addSubview:graphViewController.view];
     
+}
+
+- (void)fetchWeather{
+    NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/weather?q=dublin,ie&appid=%s", WEATHER_API_KEY];
+    NSURLRequest *request = [NSURLRequest requestWithURL:
+                             [NSURL URLWithString:URLString]];
+    
+    [[NSURLConnection alloc] initWithRequest:request delegate:self];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    NSMutableData *responseData = [[NSMutableData alloc] init];
+    [responseData appendData:data];
+    
+    NSString *responseString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+    NSError *e = nil;
+    NSData *jsonData = [responseString dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:jsonData options: NSJSONReadingMutableContainers error: &e];
+    self.weather.text = [JSON valueForKeyPath:@"weather.main"][0];
 }
 
 - (void)refreshTemperatureData{
@@ -64,9 +86,10 @@
             }else{
                 measureUnitString = @"°C";
             }
-            
-            self.inside_temp.text = [NSString stringWithFormat:@"%@%@", inside, measureUnitString];
-            self.outside_temp.text = [NSString stringWithFormat:@"%@%@", outside, measureUnitString];
+            NSNumberFormatter *fmt = [[NSNumberFormatter alloc] init];
+            [fmt setPositiveFormat:@"0.##"];
+            self.inside_temp.text = [NSString stringWithFormat:@"%@%@", [fmt stringFromNumber:inside], measureUnitString];
+            self.outside_temp.text = [NSString stringWithFormat:@"%@%@", [fmt stringFromNumber:outside], measureUnitString];
         }
     }];
 }
