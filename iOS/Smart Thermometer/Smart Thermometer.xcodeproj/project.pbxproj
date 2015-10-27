@@ -120,6 +120,7 @@
 		52825F101BC83F5100973A31 /* STRowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STRowController.m; sourceTree = "<group>"; };
 		5AFE985F25C8BAD42417C07A /* Pods-Smart Thermometer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Smart Thermometer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Smart Thermometer/Pods-Smart Thermometer.debug.xcconfig"; sourceTree = "<group>"; };
 		77F0BBA26A52489A9397D766 /* libPods-Smart Thermometer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Smart Thermometer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C62AA8C1BDEFAD0000C78C1 /* Keys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Keys.h; sourceTree = "<group>"; };
 		9CA16FE71BDD3E58009FADF5 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		9CA16FE91BDD3E80009FADF5 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		9CA170011BDD481D009FADF5 /* libCorePlot-CocoaTouch.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libCorePlot-CocoaTouch.a"; sourceTree = "<group>"; };
@@ -221,6 +222,7 @@
 				52825EB51BC83DB500973A31 /* Supporting Files */,
 				9CA1700F1BDE42EA009FADF5 /* GraphViewController.h */,
 				9CA170101BDE42EA009FADF5 /* GraphViewController.m */,
+				9C62AA8C1BDEFAD0000C78C1 /* Keys.h */,
 			);
 			path = "Smart Thermometer";
 			sourceTree = "<group>";

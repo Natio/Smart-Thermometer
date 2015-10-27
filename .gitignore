@@ -2,6 +2,9 @@
 .AppleDouble
 .LSOverride
 
+# Application Keys
+*Keys.h
+
 # Icon must end with two \r
 Icon
 
