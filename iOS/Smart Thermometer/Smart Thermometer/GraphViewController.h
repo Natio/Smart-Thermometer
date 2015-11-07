@@ -11,6 +11,8 @@
 
 @interface GraphViewController : UIViewController<CPTPlotDataSource>
 
+@property (nonatomic, strong) NSArray *objects;
+
 - (void)initPlot;
 
 @end

@@ -7,10 +7,12 @@
 //
 
 #import "GraphViewController.h"
+#import <Parse/Parse.h>
 
 @interface GraphViewController ()
 
 @property (nonatomic, weak) CPTGraphHostingView *hostView;
+@property (nonatomic, strong) CPTPlot *outsidePlot, *insidePlot;
 
 @end
 
@@ -67,11 +69,13 @@
     
     // 2 - Create the three plots
     CPTScatterPlot *outsidePlot = [[CPTScatterPlot alloc] init];
+    self.outsidePlot = outsidePlot;
     outsidePlot.dataSource = self;
     outsidePlot.identifier = @"outside";
     CPTColor *outsideColor = [CPTColor blueColor];
     [graph addPlot:outsidePlot toPlotSpace:plotSpace];
     CPTScatterPlot *insidePlot = [[CPTScatterPlot alloc] init];
+    self.insidePlot = insidePlot;
     insidePlot.dataSource = self;
     insidePlot.identifier = @"inside";
     CPTColor *insideColor = [CPTColor redColor];
@@ -83,7 +87,7 @@
     [xRange expandRangeByFactor:[NSNumber numberWithFloat:1.1f]];
     plotSpace.xRange = xRange;
     CPTMutablePlotRange *yRange = [plotSpace.yRange mutableCopy];
-    [yRange expandRangeByFactor:[NSNumber numberWithFloat:1.2f]];
+    [yRange expandRangeByFactor:[NSNumber numberWithFloat:2.0f]];
     plotSpace.yRange = yRange;
     
     // 4 - Create styles and symbols
@@ -121,10 +125,31 @@
 }
 
 -(NSUInteger)numberOfRecordsForPlot:(CPTPlot *)plot{
-    return 0;
+    return [self.objects count];
 }
 
--(NSNumber *)numberForPlot:(CPTPlot *)plot field:(NSUInteger)fieldEnum recordIndex:(NSUInteger)index {    return [NSNumber numberWithUnsignedInteger:0];
+-(NSNumber *)numberForPlot:(CPTPlot *)plot field:(NSUInteger)fieldEnum recordIndex:(NSUInteger)index {
+    //return [[self.objects objectAtIndex:index] objectForKey:@"outside"];
+    switch (fieldEnum) {
+        case CPTBarPlotFieldBarLocation:{
+            return [[self.objects objectAtIndex:index] objectForKey:@"hour"];
+        }
+        default:
+            break;
+    }
+    return [[self.objects objectAtIndex:index] objectForKey:(self.insidePlot == plot ? @"inside" : @"outside")];
+}
+
+-(nullable CPTLayer *)dataLabelForPlot:(nonnull CPTPlot *)plot recordIndex:(NSUInteger)idx{
+    PFObject *obj = [self.objects objectAtIndex:idx];
+    float value = 0.0;
+    if (plot == self.insidePlot) {
+        value = [[obj objectForKey:@"inside"] floatValue];
+    }
+    else{
+        value = [[obj objectForKey:@"outside"] floatValue];
+    }
+    return [[CPTTextLayer alloc] initWithText:[NSString stringWithFormat:@"%.1f",value]];;
 }
 
 /*

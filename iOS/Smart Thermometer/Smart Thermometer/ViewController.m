@@ -34,19 +34,41 @@
     [self refreshTemperatureData];
     
     [self fetchWeather];
-
-    //create the controller for the view related to the
-    //temeperature history graph that has to be put below.
-    GraphViewController *graphViewController = [[GraphViewController alloc] init];
-    CGPoint origin = CGPointMake(0, CGRectGetMaxY(self.refresh_button.frame) + VIEW_SPACING);
-    graphViewController.view.frame =CGRectMake(origin.x,
-                                               origin.y,
-                                               CGRectGetMaxX(self.view.bounds),
-                                               CGRectGetMaxY(self.view.bounds) - origin.y);
-    //can now draw the plot as we know its positioning
-    [graphViewController initPlot];
     
-    [self.view addSubview:graphViewController.view];
+    NSDate *now = [NSDate date];
+    NSDate *yesterday = [now dateByAddingTimeInterval:-24*60*60];
+    NSCalendarUnit unit = (NSCalendarUnit)(NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear);
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:unit fromDate:yesterday];
+    
+    
+    PFQuery *query = [PFQuery queryWithClassName:@"Hour"];
+    [query whereKey:@"day" equalTo:@(components.day)];
+    [query whereKey:@"month" equalTo:@(components.month-1)];
+    [query whereKey:@"year" equalTo:@(components.year)];
+    [query findObjectsInBackgroundWithBlock:^(NSArray * _Nullable objects, NSError * _Nullable error) {
+        if (error) {
+            NSLog(@"%@",error);
+        }
+        else{
+            
+            //create the controller for the view related to the
+            //temeperature history graph that has to be put below.
+            GraphViewController *graphViewController = [[GraphViewController alloc] init];
+            graphViewController.objects = objects;
+            CGPoint origin = CGPointMake(0, CGRectGetMaxY(self.refresh_button.frame) + VIEW_SPACING);
+            graphViewController.view.frame =CGRectMake(origin.x,
+                                                       origin.y,
+                                                       CGRectGetMaxX(self.view.bounds),
+                                                       CGRectGetMaxY(self.view.bounds) - origin.y);
+            //can now draw the plot as we know its positioning
+            [graphViewController initPlot];
+            [self.view addSubview:graphViewController.view];
+            
+            
+        }
+    }];
+
+
     
 }
 
@@ -54,6 +76,9 @@
     NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/weather?q=dublin,ie&appid=%s", WEATHER_API_KEY];
     NSURLSessionDataTask *URLSessionDataTask = [[NSURLSession sharedSession] dataTaskWithURL:[NSURL URLWithString:URLString]
                                 completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+                                    if (error) {
+                                        return;
+                                    }
             NSError *e = nil;
             NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options: NSJSONReadingMutableContainers error: &e];
             self.weather.text = [JSON valueForKeyPath:@"weather.main"][0];
