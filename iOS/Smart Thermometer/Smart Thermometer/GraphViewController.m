@@ -41,6 +41,9 @@
 -(void)configureGraph {
     // 1 - Create the graph
     CPTGraph *graph = [[CPTXYGraph alloc] initWithFrame:self.hostView.bounds];
+    graph.paddingBottom = 0.0;
+    graph.paddingLeft = 0.0;
+    graph.paddingRight = 0.0;
     [graph applyTheme:[CPTTheme themeNamed:kCPTDarkGradientTheme]];
     self.hostView.hostedGraph = graph;
     // 2 - Set graph title
@@ -88,6 +91,8 @@
     plotSpace.xRange = xRange;
     CPTMutablePlotRange *yRange = [plotSpace.yRange mutableCopy];
     [yRange expandRangeByFactor:[NSNumber numberWithFloat:2.0f]];
+    yRange.length = @30;
+    yRange.location = @0;
     plotSpace.yRange = yRange;
     
     // 4 - Create styles and symbols
@@ -117,6 +122,16 @@
 }
 
 -(void)configureAxes {
+    CPTGraph *graph = self.hostView.hostedGraph;
+    CPTXYAxis *xAxis = (CPTXYAxis *)[[graph axisSet] axisForCoordinate:(CPTCoordinateX) atIndex:0];
+    xAxis.majorIntervalLength = @2.0;
+    NSNumberFormatter *form = [[NSNumberFormatter alloc] init];
+    [form setNumberStyle:(NSNumberFormatterStyle)(NSNumberFormatterRoundCeiling)];
+    xAxis.labelFormatter = form;
+    
+    CPTXYAxis *yAxis = (CPTXYAxis *)[[graph axisSet] axisForCoordinate:(CPTCoordinateY) atIndex:0];
+    yAxis.majorIntervalLength = @2.0;
+    yAxis.labelFormatter = form;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -149,7 +164,9 @@
     else{
         value = [[obj objectForKey:@"outside"] floatValue];
     }
-    return [[CPTTextLayer alloc] initWithText:[NSString stringWithFormat:@"%.1f",value]];;
+    CPTTextLayer *l = [[CPTTextLayer alloc] initWithText:[NSString stringWithFormat:@"%.1f",value]];
+
+    return l;
 }
 
 /*
