@@ -13,6 +13,9 @@
 
 #define VIEW_SPACING 10.0
 #define FAHRENHEIT_PREFERENCE 1
+#define DAILY_PREFERENCE 0
+#define WEEKLY_PREFERENCE 1
+#define MONTHLY_PREFERENCE 2
 
 @interface ViewController ()
 
@@ -36,9 +39,24 @@
     [self fetchWeather];
     
     NSDate *now = [NSDate date];
-    NSDate *yesterday = [now dateByAddingTimeInterval:-24*60*60];
+    NSDate *startDate;
+    NSInteger userMeasureUnit = [[NSUserDefaults standardUserDefaults] integerForKey:@"time_window"];
+    switch (userMeasureUnit) {
+        case DAILY_PREFERENCE:
+            startDate = [now dateByAddingTimeInterval:-24*60*60];
+            break;
+        case WEEKLY_PREFERENCE:
+            startDate = [now dateByAddingTimeInterval:-24*7*60*60];
+            break;
+        case MONTHLY_PREFERENCE:
+            startDate = [now dateByAddingTimeInterval:-24*30*60*60];
+            break;
+        default:
+            [NSException raise:@"Invalid foo value" format:@"Time frame %ld is invalid", (long)userMeasureUnit];
+            break;
+    }
     NSCalendarUnit unit = (NSCalendarUnit)(NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear);
-    NSDateComponents *components = [[NSCalendar currentCalendar] components:unit fromDate:yesterday];
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:unit fromDate:startDate];
     
     
     PFQuery *query = [PFQuery queryWithClassName:@"Hour"];
