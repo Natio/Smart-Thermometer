@@ -73,6 +73,7 @@
             //temeperature history graph that has to be put below.
             GraphViewController *graphViewController = [[GraphViewController alloc] init];
             graphViewController.objects = objects;
+            [self addChildViewController:graphViewController];
             CGPoint origin = CGPointMake(0, CGRectGetMaxY(self.refresh_button.frame) + VIEW_SPACING);
             graphViewController.view.frame =CGRectMake(origin.x,
                                                        origin.y,
@@ -81,7 +82,7 @@
             //can now draw the plot as we know its positioning
             [graphViewController initPlot];
             [self.view addSubview:graphViewController.view];
-            
+            [graphViewController didMoveToParentViewController:self];
             
         }
     }];
