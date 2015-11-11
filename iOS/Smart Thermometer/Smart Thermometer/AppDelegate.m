@@ -50,7 +50,7 @@
 
 - (void)togglePushNotificationsFor:(UIApplication *)application {
     BOOL pushNotificationsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"push_notifications"];
-    NSLog(@"Are push notifications enabled %s", pushNotificationsEnabled ? "true" : "false");
+    NSLog(@"Are push notifications enabled? %s", pushNotificationsEnabled ? "YES" : "NO");
     if(pushNotificationsEnabled){
         // Register for Push Notitications
         UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
