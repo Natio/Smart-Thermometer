@@ -7,6 +7,7 @@
 //
 
 #import "GraphViewController.h"
+#import "ViewController.h"
 #import <Parse/Parse.h>
 
 @interface GraphViewController ()
@@ -47,7 +48,22 @@
     [graph applyTheme:[CPTTheme themeNamed:kCPTDarkGradientTheme]];
     self.hostView.hostedGraph = graph;
     // 2 - Set graph title
-    NSString *title = @"Temperatures: History";
+    NSInteger userMeasureUnit = [[NSUserDefaults standardUserDefaults] integerForKey:@"time_window"];
+    NSString *title;
+    switch (userMeasureUnit) {
+        case DAILY_PREFERENCE:
+            title = @"Daily Temperatures";
+            break;
+        case WEEKLY_PREFERENCE:
+            title = @"Weekly Temperatures";
+            break;
+        case MONTHLY_PREFERENCE:
+            title = @"Monthly Temperatures";
+            break;
+        default:
+            [NSException raise:@"Invalid time frame" format:@"Time frame %ld is invalid", (long)userMeasureUnit];
+            break;
+    }
     graph.title = title;
     // 3 - Create and set text style
     CPTMutableTextStyle *titleStyle = [CPTMutableTextStyle textStyle];

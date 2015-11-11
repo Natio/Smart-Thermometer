@@ -8,7 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController
+#define FAHRENHEIT_PREFERENCE 1
+#define DAILY_PREFERENCE 0
+#define WEEKLY_PREFERENCE 1
+#define MONTHLY_PREFERENCE 2
+
+@interface ViewController : UIViewController<UIPickerViewDataSource, UIPickerViewDelegate>
 
 
 @end

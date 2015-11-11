@@ -12,10 +12,6 @@
 #import <Parse/Parse.h>
 
 #define VIEW_SPACING 10.0
-#define FAHRENHEIT_PREFERENCE 1
-#define DAILY_PREFERENCE 0
-#define WEEKLY_PREFERENCE 1
-#define MONTHLY_PREFERENCE 2
 
 @interface ViewController ()
 
@@ -23,6 +19,7 @@
 @property (nonatomic, weak) IBOutlet UILabel *inside_temp;
 @property (nonatomic, weak) IBOutlet UILabel *weather;
 @property (nonatomic, weak) IBOutlet UIButton *refresh_button;
+@property (nonatomic, weak) IBOutlet UIPickerView *time_window_picker;
 
 @end
 
@@ -30,16 +27,22 @@
 
 - (IBAction) refreshData: (id)sender{
     [self refreshTemperatureData];
+    [self loadGraphData];
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self refreshTemperatureData];
-    
+    [self setupTimeWindowPicker];
     [self fetchWeather];
+    [self loadGraphData];
+}
+
+- (void)loadGraphData{
     
     NSDate *now = [NSDate date];
     NSDate *startDate;
+    
     NSInteger userMeasureUnit = [[NSUserDefaults standardUserDefaults] integerForKey:@"time_window"];
     switch (userMeasureUnit) {
         case DAILY_PREFERENCE:
@@ -52,7 +55,7 @@
             startDate = [now dateByAddingTimeInterval:-24*30*60*60];
             break;
         default:
-            [NSException raise:@"Invalid foo value" format:@"Time frame %ld is invalid", (long)userMeasureUnit];
+            [NSException raise:@"Invalid time frame" format:@"Time frame %ld is invalid", (long)userMeasureUnit];
             break;
     }
     NSCalendarUnit unit = (NSCalendarUnit)(NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear);
@@ -68,7 +71,6 @@
             NSLog(@"%@",error);
         }
         else{
-            
             //create the controller for the view related to the
             //temeperature history graph that has to be put below.
             GraphViewController *graphViewController = [[GraphViewController alloc] init];
@@ -83,12 +85,41 @@
             [graphViewController initPlot];
             [self.view addSubview:graphViewController.view];
             [graphViewController didMoveToParentViewController:self];
-            
         }
     }];
 
+}
 
-    
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)thePickerView {
+    return 1;//Or return whatever as you intend
+}
+
+- (NSInteger)pickerView:(UIPickerView *)thePickerView numberOfRowsInComponent:(NSInteger)component {
+    return 3;//Or, return as suitable for you...normally we use array for dynamic
+}
+
+- (NSString *)pickerView:(UIPickerView *)thePickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
+    switch (row) {
+        case DAILY_PREFERENCE:
+            return @"Daily";
+        case WEEKLY_PREFERENCE:
+            return @"Weekly";
+        case MONTHLY_PREFERENCE:
+            return @"Monthly";
+        default:
+            [NSException raise:@"Invalid time frame" format:@"Time frame %ld is invalid", (long)row];
+            break;
+    }
+    return nil;
+}
+- (void)pickerView:(UIPickerView *)thePickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component {
+    [[NSUserDefaults standardUserDefaults] setInteger:row forKey:@"time_window"];
+    [self loadGraphData];
+}
+
+- (void)setupTimeWindowPicker{
+    self.time_window_picker.dataSource = self;
+    self.time_window_picker.delegate = self;
 }
 
 - (void)fetchWeather{
