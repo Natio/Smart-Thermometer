@@ -17,6 +17,7 @@
 
 @property (nonatomic, weak) IBOutlet UILabel *outside_temp;
 @property (nonatomic, weak) IBOutlet UILabel *inside_temp;
+@property (nonatomic, weak) IBOutlet UILabel *inside_forecast;
 @property (nonatomic, weak) IBOutlet UILabel *weather;
 @property (nonatomic, weak) IBOutlet UIButton *refresh_button;
 @property (nonatomic, weak) IBOutlet UIPickerView *time_window_picker;
@@ -34,8 +35,9 @@
     [super viewDidLoad];
     [self refreshTemperatureData];
     [self setupTimeWindowPicker];
-    [self fetchWeather];
+    [self fetchAndSetWeather];
     [self loadGraphData];
+    [self fetchAndSetForecast];
 }
 
 - (void)loadGraphData{
@@ -90,12 +92,55 @@
 
 }
 
+- (void)fetchAndSetForecast{
+    PFQuery *query = [PFQuery queryWithClassName:@"Hour"];
+    [query setLimit:20];
+    [query orderByDescending:@"createdAt"];
+    [query whereKey:@"hour" greaterThanOrEqualTo:[NSNumber numberWithInt:6]];
+    [query whereKey:@"hour" lessThanOrEqualTo:[NSNumber numberWithInt:8]];
+    [query findObjectsInBackgroundWithBlock:^(NSArray * _Nullable objects, NSError * _Nullable error) {
+        if (error) {
+            NSLog(@"%@",error);
+        }
+        else{
+            // calculate the expected tomorrow's house temperature, according to temperature history
+            float aggregate_difference = 0.0;
+            for (PFObject* parseObject in objects){
+                float inside_temp = [parseObject[@"inside"] floatValue];
+                float outside_temp = [parseObject[@"outside"] floatValue];
+                NSLog(@"%f %f", inside_temp, outside_temp);
+                aggregate_difference += inside_temp - outside_temp;
+            }
+            float avg_difference = aggregate_difference/objects.count;
+            NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/forecast?q=dublin,ie&appid=%s&units=metric", WEATHER_API_KEY];
+            __block float forecast_temp;
+            NSURLSessionDataTask *URLSessionDataTask = [[NSURLSession sharedSession] dataTaskWithURL:[NSURL URLWithString:URLString]
+                                                                                   completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+                    if (error) {
+                        NSLog(@"%@", error);
+                        return;
+                    }
+                    NSError *e = nil;
+                    NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options: NSJSONReadingMutableContainers error: &e];
+                    forecast_temp = [(NSString *)[JSON valueForKeyPath:@"list.main.temp"][0] floatValue];
+                    NSNumberFormatter *fmt = [[NSNumberFormatter alloc] init];
+                    [fmt setPositiveFormat:@"0.##"];
+                    NSInteger userMeasureUnit = [[NSUserDefaults standardUserDefaults] integerForKey:@"measure_unit"];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        self.inside_forecast.text = [NSString stringWithFormat:@"Tomorrow: %@%@", [fmt stringFromNumber:[NSNumber numberWithFloat:forecast_temp + avg_difference]], userMeasureUnit == FAHRENHEIT_PREFERENCE ? @"°F" : @"°C"];
+                        });
+            }];
+            [URLSessionDataTask resume];
+        }
+    }];
+}
+
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)thePickerView {
-    return 1;//Or return whatever as you intend
+    return 1;
 }
 
 - (NSInteger)pickerView:(UIPickerView *)thePickerView numberOfRowsInComponent:(NSInteger)component {
-    return 3;//Or, return as suitable for you...normally we use array for dynamic
+    return 3;
 }
 
 - (NSString *)pickerView:(UIPickerView *)thePickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
@@ -122,7 +167,7 @@
     self.time_window_picker.delegate = self;
 }
 
-- (void)fetchWeather{
+- (void)fetchAndSetWeather{
     NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/weather?q=dublin,ie&appid=%s", WEATHER_API_KEY];
     NSURLSessionDataTask *URLSessionDataTask = [[NSURLSession sharedSession] dataTaskWithURL:[NSURL URLWithString:URLString]
                                 completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
@@ -131,7 +176,9 @@
                                     }
             NSError *e = nil;
             NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options: NSJSONReadingMutableContainers error: &e];
-            self.weather.text = [JSON valueForKeyPath:@"weather.main"][0];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                self.weather.text = [JSON valueForKeyPath:@"weather.main"][0];
+            });
     }];
     [URLSessionDataTask resume];
 }
