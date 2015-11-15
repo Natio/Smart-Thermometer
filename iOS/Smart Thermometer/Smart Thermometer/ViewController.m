@@ -12,6 +12,7 @@
 #import <Parse/Parse.h>
 
 #define VIEW_SPACING 10.0
+#define TOMORROW_SAMETIME_INDEX 7
 
 @interface ViewController ()
 
@@ -122,7 +123,8 @@
                     }
                     NSError *e = nil;
                     NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options: NSJSONReadingMutableContainers error: &e];
-                    forecast_temp = [(NSString *)[JSON valueForKeyPath:@"list.main.temp"][0] floatValue];
+                    NSDictionary *tomorrowSameTimeDictionary = [JSON valueForKeyPath:@"list"][TOMORROW_SAMETIME_INDEX];
+                    forecast_temp = [(NSString *)([tomorrowSameTimeDictionary  valueForKeyPath:@"main.temp"]) floatValue];
                     NSNumberFormatter *fmt = [[NSNumberFormatter alloc] init];
                     [fmt setPositiveFormat:@"0.##"];
                     NSInteger userMeasureUnit = [[NSUserDefaults standardUserDefaults] integerForKey:@"measure_unit"];
