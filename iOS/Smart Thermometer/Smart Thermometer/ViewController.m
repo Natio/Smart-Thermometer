@@ -94,11 +94,12 @@
 }
 
 - (void)fetchAndSetForecast{
+    NSDateComponents *nowComponents = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:[NSDate date]];
     PFQuery *query = [PFQuery queryWithClassName:@"Hour"];
     [query setLimit:20];
     [query orderByDescending:@"createdAt"];
-    [query whereKey:@"hour" greaterThanOrEqualTo:[NSNumber numberWithInt:6]];
-    [query whereKey:@"hour" lessThanOrEqualTo:[NSNumber numberWithInt:8]];
+    [query whereKey:@"hour" greaterThanOrEqualTo:[NSNumber numberWithFloat:MIN(0.0, nowComponents.hour - 1)]];
+    [query whereKey:@"hour" lessThanOrEqualTo:[NSNumber numberWithInt:MAX(23.0, nowComponents.hour + 1)]];
     [query findObjectsInBackgroundWithBlock:^(NSArray * _Nullable objects, NSError * _Nullable error) {
         if (error) {
             NSLog(@"%@",error);
@@ -167,6 +168,7 @@
 - (void)setupTimeWindowPicker{
     self.time_window_picker.dataSource = self;
     self.time_window_picker.delegate = self;
+    [self.time_window_picker selectRow:[[NSUserDefaults standardUserDefaults] integerForKey:@"time_window"] inComponent:0 animated:NO];
 }
 
 - (void)fetchAndSetWeather{
