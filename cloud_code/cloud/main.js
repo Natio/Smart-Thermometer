@@ -1,6 +1,6 @@
 var FORECAST_ID = "faJZwaD5nj"
-var FORECAST_KERNEL = [0.2, 0.2, 0.2, 0.2, 0.2];
-var current_forecast_hour = -1;
+var FORECAST_SAMPLE_SIZE = 5;
+var EPS = 4
 
 function createHourRecord(year,month,day,h, callback){
   var Hour = Parse.Object.extend("Hour");
@@ -27,29 +27,46 @@ function createHourRecord(year,month,day,h, callback){
 }
 
 function getExpTemp(temperatures){
-  var expTemp = 0;
+  var expTempIn = 0;
+  var expTempOut = 0;
+  var weight = 1.0 / (temperatures.length); // TODO It is overly simplified
 
-  for(i = 0; i < temperatures.length; i++){
-    expTemp += FORECAST_KERNEL[i] * temperatures[i];
+  for(var i = 0; i < temperatures.length; i++){
+    expTempIn += weight * temperatures[i].get("inside");
+    expTempOut += weight * temperatures[i].get("outside");
+
+    console.log("Sample " + i + " has been created on" + temperatures[i].get("createdAt").getDate() +
+                " - Its inside temp is " + temperatures[i].get("inside") +
+                " - Its outside temp is " + temperatures[i].get("outside"));
   }
 
-  return expTemp;
+  console.log("Expected temperature inside is: " + expTempIn);
+  console.log("Expected temperature outside is: " + expTempOut);
+
+  return [expTempIn, expTempOut];
 }
 
-function updateHourlyForecast(h){
-  var Hour = Parse.Object.extend("Hour");
-  var hour = new Hour();
-  var query = new Parse.Query(Hour);
+function updateHourlyForecast(h, mins){
+  console.log("Computing forecast for hours " + h + ":" + mins);
+
+  var Temperatures = Parse.Object.extend("Temperatures");
+  var query = new Parse.Query(Temperatures);
+
   query.equalTo("hour", h);
+  query.lessThan("mins", mins + EPS);
+  query.greaterThan("mins", mins - EPS);
   query.descending("createdAt");
-  query.limit(FORECAST_KERNEL.length);
+  query.limit(FORECAST_SAMPLE_SIZE);
   query.find({
     success: function(results) {
       if(results.length > 0){
         var Forecast = Parse.Object.extend("Forecast");
         var forecast = new Forecast();
+        var expTemps = getExpTemp(results);
+
         forecast.id = FORECAST_ID;
-        forecast.set("expTemp1H", getExpTemp(results));
+        forecast.set("expTemp1HIn", expTemps[0]);
+        forecast.set("expTemp1HOut", expTemps[1]);
         forecast.set("hour", h);
         forecast.save(null, {
           success: function(newObj) {
@@ -69,7 +86,6 @@ function updateHourlyForecast(h){
 
 function findOrCreateHourRecord(year, month, day, h, callback){
   var Hour = Parse.Object.extend("Hour");
-  var hour = new Hour();
   var query = new Parse.Query(Hour);
   query.equalTo("day", day);
   query.equalTo("month", month);
@@ -109,6 +125,23 @@ Parse.Cloud.afterSave("Temperatures", function(request, response) {
   var month = time.getMonth();
   var day = time.getDate();
   var hour = time.getHours();
+  var mins = time.getMinutes();
+
+  // This check prevents infinite re-triggering
+  if(t.get("hour") === hour && t.get("mins") === mins) {
+    return;
+  }
+  
+  t.set("hour", hour);
+  t.set("mins", mins);
+  t.save(null, {
+    success: function(newObj) {
+        updateHourlyForecast((hour + 1) % 24, mins);
+    },
+    error: function(newObj, error) {
+      console.error('Failed to update temperature: ' + error.message);
+    }
+  });
 
   findOrCreateHourRecord(year, month, day, hour, function(hourObj, error){
     if(error != null){
@@ -136,7 +169,19 @@ Parse.Cloud.afterSave("Temperatures", function(request, response) {
     });
   });
 
-  if(current_forecast_hour != (hour + 1) % 24){
-    updateHourlyForecast((hour + 1) % 24);
-  }
+  /*
+  var Forecast = Parse.Object.extend("Forecast");
+  var query = new Parse.Query(Forecast);
+  query.limit(1);
+  query.find({
+    success: function(results) {
+      if(results.length > 0 && results[0].get('hour') != (hour + 1) % 24){
+        updateHourlyForecast((hour + 1) % 24);
+      }
+    },
+    error: function(error) {
+      callback(null, error);
+    }
+  });
+  */
 });
