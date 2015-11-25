@@ -4,6 +4,7 @@ import com.parse.ParseException;
 import com.parse.ParseQuery;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,6 +41,8 @@ public class DataStore {
             Logger.getAnonymousLogger().log(Level.SEVERE, pe.getMessage());
         }
 
+        Collections.reverse(queryResult);
+
         return queryResult;
     }
 
@@ -57,6 +60,8 @@ public class DataStore {
         catch(ParseException pe){
             Logger.getAnonymousLogger().log(Level.SEVERE, pe.getMessage());
         }
+
+        Collections.reverse(queryResult);
 
         return queryResult;
     }
