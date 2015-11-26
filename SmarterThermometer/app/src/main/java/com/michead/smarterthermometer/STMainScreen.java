@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
@@ -12,6 +13,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -19,6 +21,8 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.XAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.ChartTouchListener;
+import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
@@ -36,7 +40,8 @@ import java.util.logging.Logger;
 public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRefreshListener,
                                                         CompoundButton.OnCheckedChangeListener,
                                                         SeekBar.OnSeekBarChangeListener,
-                                                        OnChartValueSelectedListener{
+                                                        OnChartValueSelectedListener,
+                                                        OnChartGestureListener{
 
     private static final int MAX_SIZE = 100;
     private static final int MIN_SIZE = 10;
@@ -118,7 +123,13 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         lc.setAutoScaleMinMaxEnabled(true);
         lc.setDescription("Temperature samples");
         lc.setOnChartValueSelectedListener(this);
-        lc.setMaxVisibleValueCount(MIN_SIZE * 4);
+        lc.setMaxVisibleValueCount(MIN_SIZE * 3);
+        lc.setOnChartGestureListener(this);
+        lc.setPinchZoom(true); // TODO Check this
+
+        Legend legend = lc.getLegend();
+        legend.setEnabled(true);
+        legend.setTextColor(R.color.blue);
 
         // xAxis.setDrawLabels(false);
         // yAxisL.setDrawLabels(false);
@@ -196,9 +207,6 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         LineDataSet lineInHTemps = new LineDataSet((List)hTempInEntries.clone(), "HInsideTemps");
         LineDataSet lineOutHTemps = new LineDataSet((List)hTempOutEntries.clone(), "HOutsideTemps");
 
-        initLineDataSet(lineInHTemps, R.color.red);
-        initLineDataSet(lineOutHTemps, R.color.blue);
-
         hLineDataSets.add(lineInHTemps);
         hLineDataSets.add(lineOutHTemps);
 
@@ -210,9 +218,6 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
         LineDataSet lineInTemps = new LineDataSet((List)tempInEntries.clone(), "InsideTemps");
         LineDataSet lineOutTemps = new LineDataSet((List)tempOutEntries.clone(), "OutsideTemps");
-
-        initLineDataSet(lineInTemps, R.color.red);
-        initLineDataSet(lineOutTemps, R.color.blue);
 
         lineDataSets.add(lineInTemps);
         lineDataSets.add(lineOutTemps);
@@ -331,15 +336,55 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         else date = timestamps.get(dataSetIndex);
 
         String fDate = df.format(date);
-        String day = fDate.split("/")[1] + fDate.split("/")[0];
-        String hour = fDate.split(" ")[1].split(":")[0] + fDate.split(" ")[1].split(":")[1];
+        String day = fDate.split("/")[1] + "/" + fDate.split("/")[0];
+        String hour = fDate.split(" ")[1].split(":")[0] + ":" + fDate.split(" ")[1].split(":")[1];
 
         Toast.makeText(getActivity(), e.getVal() + "° " + location +
-                " on " + day + " at " + hour, Toast.LENGTH_LONG);
+                " on " + day + " at " + hour, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onNothingSelected() {
+
+    }
+
+    @Override
+    public void onChartGestureStart(MotionEvent motionEvent, ChartTouchListener.ChartGesture chartGesture) {
+
+    }
+
+    @Override
+    public void onChartGestureEnd(MotionEvent motionEvent, ChartTouchListener.ChartGesture chartGesture) {
+
+    }
+
+    @Override
+    public void onChartLongPressed(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public void onChartDoubleTapped(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public void onChartSingleTapped(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public void onChartFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        // TODO
+    }
+
+    @Override
+    public void onChartScale(MotionEvent motionEvent, float v, float v1) {
+        // TODO
+    }
+
+    @Override
+    public void onChartTranslate(MotionEvent motionEvent, float v, float v1) {
 
     }
 
@@ -348,7 +393,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         @Override
         public String getXValue(String original, int index, ViewPortHandler viewPortHandler) {
 
-            if (STMainScreen.this.isHourly){
+            if (!STMainScreen.this.isHourly){
                 String[] tokens = original.split("/");
                 return tokens[1] + "/" + tokens[0];
             }

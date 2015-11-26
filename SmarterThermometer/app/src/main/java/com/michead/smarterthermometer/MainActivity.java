@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
     STPagerAdapter pagerAdapter;
     ViewPager viewPager;
@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(pagerAdapter);
+        viewPager.addOnPageChangeListener(this);
     }
 
     @Override
@@ -47,6 +48,21 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
+
     public static class STPagerAdapter extends FragmentPagerAdapter {
 
         private static final String[] headers = {"Main screen"};
@@ -60,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
             switch (i) {
                 case 0:
                     return new STMainScreen();
+                case 1:
+                    return new StatisticsScreen();
                 default:
                     return null;
             }
