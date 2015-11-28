@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * Created by Simone on 11/24/2015.
  */
-@ParseClassName("Temperatures")
+@ParseClassName("Hour")
 public class Temperature extends ParseObject {
 
     private static final String INSIDE_TEMPERATURE_ATTRIBUTE = "inside";

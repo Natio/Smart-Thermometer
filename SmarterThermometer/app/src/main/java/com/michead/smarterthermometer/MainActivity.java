@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
         viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(pagerAdapter);
-        viewPager.addOnPageChangeListener(this);
+        // viewPager.addOnPageChangeListener(this); FIXME Not hooked
     }
 
     @Override

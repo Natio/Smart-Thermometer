@@ -16,30 +16,15 @@
             android:id="@+id/line_chart"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.8" />
+            android:layout_weight="0.95" />
 
-        <LinearLayout
+
+        <SeekBar
             android:layout_width="match_parent"
+            android:layout_weight="0.05"
             android:layout_height="0dp"
-            android:layout_weight="0.2"
-            android:orientation="vertical"
-            android:weightSum="1">
-
-            <SeekBar
-                android:layout_width="match_parent"
-                android:layout_weight="0.5"
-                android:layout_height="0dp"
-                android:id="@+id/temp_size"
-                android:layout_gravity="center"/>
-
-            <Switch
-                android:layout_width="wrap_content"
-                android:layout_weight="0.5"
-                android:layout_height="0dp"
-                android:id="@+id/h_switch"
-                android:layout_gravity="center_horizontal"/>
-
-        </LinearLayout>
+            android:layout_gravity="center"
+            android:id="@+id/temp_size" />
 
     </LinearLayout>
 

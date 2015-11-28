@@ -1,5 +1,6 @@
 package com.michead.smarterthermometer;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -7,9 +8,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -19,8 +18,11 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.FillFormatter;
 import com.github.mikephil.charting.formatter.XAxisValueFormatter;
+import com.github.mikephil.charting.formatter.YAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.LineDataProvider;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -38,37 +40,34 @@ import java.util.logging.Logger;
  * Created by Simone on 11/23/2015.
  */
 public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRefreshListener,
-                                                        CompoundButton.OnCheckedChangeListener,
                                                         SeekBar.OnSeekBarChangeListener,
                                                         OnChartValueSelectedListener,
                                                         OnChartGestureListener{
 
-    private static final int MAX_SIZE = 100;
-    private static final int MIN_SIZE = 10;
+    private static final int MAX_SIZE = 24;
+    private static final int MIN_SIZE = 12;
+    private static final int ANIM_TIME = 2000;
+    private static final int CIRCLE_SIZE = 5;
+    private static final float LINE_WIDTH = 2f;
+    private static final float CUBIC_INTENSITY = 0.2f;
+    private static final int FILL_LINE_POSITION = -20;
 
     private static ArrayList<Entry> tempInEntries = new ArrayList<>();
     private static ArrayList<Entry> tempOutEntries = new ArrayList<>();
-    private static ArrayList<Entry> hTempInEntries = new ArrayList<>();
-    private static ArrayList<Entry> hTempOutEntries = new ArrayList<>();
 
     private static List<Date> timestamps = new ArrayList<>();
-    private static List<Date> hTimestamps = new ArrayList<>();
 
     private static List<String> xLabels = new ArrayList<>();
     private static List<LineDataSet> lineDataSets = new ArrayList<>();
 
-    private static List<String> hXLabels = new ArrayList<>();
-    private static List<LineDataSet> hLineDataSets = new ArrayList<>();
 
     private static final DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
     private SwipeRefreshLayout srl;
     private LineChart lc;
-    private Switch hSwitch;
     private SeekBar seekBar;
 
     private int currentSize = MAX_SIZE;
-    private boolean isHourly = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -80,10 +79,6 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
         lc = (LineChart)rootView.findViewById(R.id.line_chart);
         initChart();
-
-        hSwitch = (Switch)rootView.findViewById(R.id.h_switch);
-        hSwitch.setChecked(isHourly);
-        hSwitch.setOnCheckedChangeListener(this);
 
         seekBar = (SeekBar)rootView.findViewById(R.id.temp_size);
         seekBar.setMax(MAX_SIZE - MIN_SIZE);
@@ -111,37 +106,35 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     public void initChart(){
         XAxis xAxis = lc.getXAxis();
         YAxis yAxisL = lc.getAxisLeft();
-        YAxis yAxisR = lc.getAxisRight();
 
-        xAxis.setDrawGridLines(false);
-        yAxisL.setDrawGridLines(false);
-        yAxisR.setDrawGridLines(false);
-
+        // xAxis.setDrawGridLines(false);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setValueFormatter(new TimestampFormatter());
-        xAxis.setSpaceBetweenLabels(2);
+        xAxis.setSpaceBetweenLabels(1);
+
+        // yAxisL.setDrawGridLines(false);
+        yAxisL.setValueFormatter(new TemperatureFormatter());
 
         lc.setAutoScaleMinMaxEnabled(true);
-        lc.setDescription("Temperature samples");
+        lc.setDescription("");
         lc.setOnChartValueSelectedListener(this);
-        lc.setMaxVisibleValueCount(MIN_SIZE * 3);
+        lc.setMaxVisibleValueCount(0); // lc.setMaxVisibleValueCount(MIN_SIZE * 4);
         lc.setOnChartGestureListener(this);
-        lc.setPinchZoom(true); // TODO Check this
+        lc.setHighlightPerTapEnabled(true);
+        lc.setDrawGridBackground(true);
+        lc.setGridBackgroundColor(Color.argb(50, 0, 0, 0));
+        // lc.setPinchZoom(true); // TODO Check this
 
         Legend legend = lc.getLegend();
         legend.setEnabled(true);
         legend.setTextColor(R.color.blue);
-
-        // xAxis.setDrawLabels(false);
-        // yAxisL.setDrawLabels(false);
-        // yAxisR.setDrawLabels(false);
+        legend.setPosition(Legend.LegendPosition.ABOVE_CHART_LEFT);
     }
 
     public void fetchData(){
         refreshTemps(false);
-        refreshHTemps(false);
 
         if (tempInEntries == null || tempOutEntries == null) refreshTemps(true);
-        if (hTempInEntries == null || hTempOutEntries == null) refreshHTemps(true);
 
         refreshData();
         animateLabels();
@@ -171,53 +164,20 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         }
     }
 
-    public void refreshHTemps (boolean useCache){
-        List<HTemperature> temps = null;
-
-        if (useCache) temps = DataStore.getInstance().getCachedHTemps();
-        else temps = DataStore.getInstance().getHTempsInRange();
-
-        hTempInEntries.clear();
-        hTempOutEntries.clear();
-
-        hTimestamps.clear();
-
-        if (temps == null) return;
-
-        int i = 0;
-        for (HTemperature temp : temps){
-            hTempInEntries.add(new Entry((float)temp.getInTemp(), i));
-            hTempOutEntries.add(new Entry((float)temp.getOutTemp(), i));
-
-            hTimestamps.add(temp.getTimestamp());
-
-            i++;
-        }
-    }
-
     public void animateLabels(){
-        lc.animateXY(3000, 3000);
+        lc.animateX(ANIM_TIME);
     }
 
     public void refreshData(){
 
-        hLineDataSets.clear();
-        xLabels.clear();
-
-        LineDataSet lineInHTemps = new LineDataSet((List)hTempInEntries.clone(), "HInsideTemps");
-        LineDataSet lineOutHTemps = new LineDataSet((List)hTempOutEntries.clone(), "HOutsideTemps");
-
-        hLineDataSets.add(lineInHTemps);
-        hLineDataSets.add(lineOutHTemps);
-
-        hXLabels = getXLabels(hTimestamps);
-
-
         lineDataSets.clear();
         xLabels.clear();
 
-        LineDataSet lineInTemps = new LineDataSet((List)tempInEntries.clone(), "InsideTemps");
-        LineDataSet lineOutTemps = new LineDataSet((List)tempOutEntries.clone(), "OutsideTemps");
+        LineDataSet lineInTemps = new LineDataSet((List)tempInEntries.clone(), "Temperature inside");
+        LineDataSet lineOutTemps = new LineDataSet((List)tempOutEntries.clone(), "Temperature outside");
+
+        initLineDataSet(lineInTemps, true);
+        initLineDataSet(lineOutTemps, false);
 
         lineDataSets.add(lineInTemps);
         lineDataSets.add(lineOutTemps);
@@ -227,9 +187,39 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         resizeChartData();
     }
 
-    public void initLineDataSet(LineDataSet lds, int color){
-        lds.setColor(color);
+    public void initLineDataSet(LineDataSet lds, boolean isInside){
+
+        if(isInside) {
+            lds.setCircleColor(Color.RED);
+            lds.setHighLightColor(Color.RED);
+            lds.setColor(Color.RED);
+            lds.setFillColor(Color.RED);
+            lds.setFillAlpha(100);
+        }
+        else{
+            lds.setCircleColor(Color.BLUE);
+            lds.setHighLightColor(Color.BLUE);
+            lds.setColor(Color.BLUE);
+            lds.setFillColor(Color.BLUE);
+            lds.setFillAlpha(100);
+        }
+
         lds.setAxisDependency(YAxis.AxisDependency.LEFT);
+        lds.setDrawFilled(true);
+        lds.setCircleSize(CIRCLE_SIZE);
+        lds.setDrawCubic(true);
+        lds.setCubicIntensity(CUBIC_INTENSITY);
+        lds.setDrawCircles(false);
+        lds.setLineWidth(LINE_WIDTH);
+        lds.setDrawHorizontalHighlightIndicator(false);
+        lds.setDrawVerticalHighlightIndicator(false);
+        lds.disableDashedHighlightLine();
+        lds.setFillFormatter(new FillFormatter() {
+            @Override
+            public float getFillLinePosition(LineDataSet dataSet, LineDataProvider dataProvider) {
+                return FILL_LINE_POSITION;
+            }
+        });
     }
 
     public void invalidateChart(List<String> xLabels, List<LineDataSet> tempSets){
@@ -245,55 +235,29 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         if (currentSize < MIN_SIZE) currentSize = MIN_SIZE;
         if (currentSize > MAX_SIZE) currentSize = MAX_SIZE;
 
-        if (!isHourly){
-            int diff = currentSize - xLabels.size();
+        int diff = currentSize - xLabels.size();
 
-            Logger.getAnonymousLogger().log(Level.INFO, "Difference in size: " + diff);
+        Logger.getAnonymousLogger().log(Level.INFO, "Difference in size: " + diff);
 
-            if (diff > 0) {
-                int index = xLabels.size();
-                while(xLabels.size() != currentSize){
-                    xLabels.add(df.format(timestamps.get(index)));
-                    lineDataSets.get(0).addEntry(tempInEntries.get(index));
-                    lineDataSets.get(1).addEntry(tempOutEntries.get(index));
-                    index++;
-                }
+        if (diff > 0) {
+            int index = xLabels.size();
+            while(xLabels.size() != currentSize){
+                xLabels.add(df.format(timestamps.get(index)));
+                lineDataSets.get(0).addEntry(tempInEntries.get(index));
+                lineDataSets.get(1).addEntry(tempOutEntries.get(index));
+                index++;
             }
-            else if (diff < 0){
-                while(xLabels.size() != currentSize){
-                    xLabels.remove(xLabels.size() - 1);
-                    lineDataSets.get(0).removeLast();
-                    lineDataSets.get(1).removeLast();
-                }
-            }
-
-            lc.notifyDataSetChanged();
-            invalidateChart(xLabels, lineDataSets);
         }
-        else{
-            int diff = currentSize - hXLabels.size();
-
-            Logger.getAnonymousLogger().log(Level.INFO, "Difference in size: " + diff);
-
-            if (diff > 0) {
-                int index = hXLabels.size();
-                while(hXLabels.size() != currentSize){
-                    hXLabels.add(df.format(hTimestamps.get(index)));
-                    hLineDataSets.get(0).addEntry(hTempInEntries.get(index));
-                    hLineDataSets.get(1).addEntry(hTempOutEntries.get(index));
-                    index++;
-                }
+        else if (diff < 0){
+            while(xLabels.size() != currentSize){
+                xLabels.remove(xLabels.size() - 1);
+                lineDataSets.get(0).removeLast();
+                lineDataSets.get(1).removeLast();
             }
-            else if (diff < 0){
-                while(hXLabels.size() != currentSize){
-                    hXLabels.remove(hXLabels.size() - 1);
-                    hLineDataSets.get(0).removeLast();
-                    hLineDataSets.get(1).removeLast();
-                }
-            }
-
-            invalidateChart(hXLabels, hLineDataSets);
         }
+
+        lc.notifyDataSetChanged();
+        invalidateChart(xLabels, lineDataSets);
     }
 
     public List<String> getXLabels(List<Date> timestamps){
@@ -306,14 +270,8 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     }
 
     @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        isHourly = isChecked;
-        resizeChartData();
-    }
-
-    @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        currentSize = progress;
+        currentSize = progress + MIN_SIZE;
         resizeChartData();
     }
 
@@ -330,16 +288,13 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     @Override
     public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
         String location = (h.getDataSetIndex() == 0)? "inside" : "outside";
-        Date date = null;
-
-        if (isHourly) date = hTimestamps.get(dataSetIndex);
-        else date = timestamps.get(dataSetIndex);
+        Date date = timestamps.get(dataSetIndex);
 
         String fDate = df.format(date);
         String day = fDate.split("/")[1] + "/" + fDate.split("/")[0];
         String hour = fDate.split(" ")[1].split(":")[0] + ":" + fDate.split(" ")[1].split(":")[1];
 
-        Toast.makeText(getActivity(), e.getVal() + "° " + location +
+        Toast.makeText(getActivity(), String.format("%.2f", e.getVal()) + "° " + location +
                 " on " + day + " at " + hour, Toast.LENGTH_LONG).show();
     }
 
@@ -388,19 +343,19 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
     }
 
+    class TemperatureFormatter implements YAxisValueFormatter {
+
+        @Override
+        public String getFormattedValue(float value, YAxis axis) {
+            return (int)value + "°";
+        }
+    }
+
     class TimestampFormatter implements XAxisValueFormatter {
 
         @Override
         public String getXValue(String original, int index, ViewPortHandler viewPortHandler) {
-
-            if (!STMainScreen.this.isHourly){
-                String[] tokens = original.split("/");
-                return tokens[1] + "/" + tokens[0];
-            }
-            else{
-                String[] tokens = original.split(" ")[1].split(":");
-                return tokens[0] + ":" + tokens[1];
-            }
+            return original.split(" ")[1].split(":")[0];
         }
     }
 }

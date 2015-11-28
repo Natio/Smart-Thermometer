@@ -17,7 +17,6 @@ public class STApplication extends Application {
 
         Parse.initialize(this, "GkfQgBEWhTwEWe6edrUDDt0sZ9DLPubO5HYrHBh7", "LeHrMeZQY2EfuDkQgfx8iyQL6NAS9uswZFFtpwcd");
         ParseObject.registerSubclass(Temperature.class);
-        ParseObject.registerSubclass(HTemperature.class);
 
         ParseUser.enableAutomaticUser();
         ParseACL defaultACL = new ParseACL();
