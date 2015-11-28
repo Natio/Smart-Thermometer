@@ -2,28 +2,34 @@ package com.michead.smarterthermometer;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Formatter;
-import java.util.Locale;
+import java.text.DecimalFormat;
+import java.util.List;
 
 /**
  * Created by Simone on 11/26/2015.
  */
-public class StatisticsScreen extends Fragment{
+public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
-    private static final String OPENWEATHER_API_KEY = "2e292bad1e6b72870a2975759a06db52";
+    private static final String TEXTVIEW_SEPARATOR = ": ";
+    private static final String CELSIUS_DEGS = "°C";
+
+    private static final DecimalFormat df = new DecimalFormat("#.00");
+
+    private SwipeRefreshLayout srl;
+
+    private TextView today_in_min;
+    private TextView today_in_max;
+    private TextView today_out_min;
+    private TextView today_out_max;
+
+    private TextView tomorrow_in_same_time;
+    private TextView tomorrow_out_same_time;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -31,40 +37,91 @@ public class StatisticsScreen extends Fragment{
 
         View rootView = inflater.inflate(R.layout.statistics_screen, container, false);
 
+        srl = (SwipeRefreshLayout)rootView.findViewById(R.id.srl);
+        srl.setOnRefreshListener(this);
+
+        today_in_min = (TextView)rootView.findViewById(R.id.today_min_in);
+        today_in_max = (TextView)rootView.findViewById(R.id.today_max_in);
+        today_out_min = (TextView)rootView.findViewById(R.id.today_min_out);
+        today_out_max = (TextView)rootView.findViewById(R.id.today_max_out);
+
+        tomorrow_in_same_time = (TextView)rootView.findViewById(R.id.tomorrow_in_same_time);
+        tomorrow_out_same_time = (TextView)rootView.findViewById(R.id.tomorrow_out_same_time);
+
+        initTextViews();
+
         return rootView;
     }
 
-    public static void getWeatherForecastForTomorrowThisTime() throws IOException, JSONException{
+    @SuppressWarnings("all")
+    public void initTextViews(){
+        today_in_min.setText("Min temp inside today" + TEXTVIEW_SEPARATOR);
+        today_in_max.setText("Max temp inside today" + TEXTVIEW_SEPARATOR);
+        today_out_min.setText("Min temp outside today" + TEXTVIEW_SEPARATOR);
+        today_out_max.setText("Max temp outside today" + TEXTVIEW_SEPARATOR);
 
-        StringBuilder sb = new StringBuilder();
-        String request = "http://api.openweathermap.org/data/2.5/forecast?q=%1$2s,ie&appid=%2$2s&units=metric";
-        Formatter formatter = new Formatter(sb, Locale.US);
-        formatter.format(request, getLocation(), getCurrentHour());
+        tomorrow_in_same_time.setText("Expected temperature inside tomorrow this time: " + TEXTVIEW_SEPARATOR);
+        tomorrow_out_same_time.setText("Expected temperature outside tomorrow this time: " + TEXTVIEW_SEPARATOR);
+    }
 
-        try{
-            URL requestURL = new URL("api.openweathermap.org/data/2.5/weather?q=Dublin");
-            URLConnection conn = requestURL.openConnection();
+    @Override
+    public void onResume(){
+        super.onResume();
 
-            BufferedReader streamReader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-            StringBuilder responseStrBuilder = new StringBuilder();
+        List<Temperature> temps = DataStore.getInstance().getCachedTemps();
 
-            String inputStr;
-            while ((inputStr = streamReader.readLine()) != null)
-                responseStrBuilder.append(inputStr);
+        updateTodayStats(temps);
+        updateTomorrowStats(temps);
+    }
 
-            JSONObject json = new JSONObject(responseStrBuilder.toString());
+    @Override
+    public void onRefresh() {
 
+        List<Temperature> temps = DataStore.getInstance().getCachedTemps();
+
+        updateTodayStats(temps);
+        updateTomorrowStats(temps);
+
+        srl.setRefreshing(false);
+    }
+
+    public void updateTodayStats(List<Temperature> temps){
+
+        double minIn = Float.MAX_VALUE;
+        double minOut = Float.MAX_VALUE;
+        double maxIn = Float.MIN_VALUE;
+        double maxOut = Float.MIN_VALUE;
+
+        for (Temperature temp : temps){
+            if (temp.getInTemp() < minIn) minIn = temp.getInTemp();
+            if (temp.getInTemp() > maxIn) maxIn = temp.getInTemp();
+            if (temp.getOutTemp() < minOut) minOut = temp.getOutTemp();
+            if (temp.getOutTemp() > maxOut) maxOut = temp.getOutTemp();
         }
-        catch(IOException ioe){}
-        catch(JSONException je){}
+
+        updateView(today_in_min, minIn);
+        updateView(today_in_max, maxIn);
+        updateView(today_out_min, minOut);
+        updateView(today_out_max, maxOut);
     }
 
-    public static String getLocation(){
-        return null;
+    public void updateTomorrowStats(List<Temperature> temps){
+
+        double inTemp = temps.get(temps.size() - 1).getInTemp();
+        double outTemp = temps.get(temps.size() - 1).getOutTemp();
+
+        double diff = inTemp - outTemp;
+
+        double tomorrowTempOut = Utils.getWeatherForecastForTomorrowThisTime(getActivity());
+        double tomorrowTempIn = tomorrowTempOut + diff;
+
+        updateView(tomorrow_in_same_time, tomorrowTempIn);
+        updateView(tomorrow_out_same_time, tomorrowTempOut);
     }
 
-    public static int getCurrentHour(){
-        return 0;
-    }
+    @SuppressWarnings("all")
+    public void updateView(TextView tv, double val){
 
+        tv.setText(  tv.getText().toString().split(TEXTVIEW_SEPARATOR)[0] + TEXTVIEW_SEPARATOR + df.format(val) + CELSIUS_DEGS);
+    }
 }

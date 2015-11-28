@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(pagerAdapter);
         viewPager.addOnPageChangeListener(this);
+        viewPager.setCurrentItem(1);
     }
 
     @Override
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     public static class STPagerAdapter extends FragmentPagerAdapter {
 
-        private static final String[] headers = {"Chart", "Statistics", "Settings"};
+        private static final String[] headers = {"Settings", "Chart", "Statistics"};
 
         public STPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -74,11 +75,11 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         @Override
         public Fragment getItem(int i) {
             switch (i) {
-                case 0:
-                    return new STMainScreen();
                 case 1:
-                    return new StatisticsScreen();
+                    return new STMainScreen();
                 case 2:
+                    return new StatisticsScreen();
+                case 0:
                     return new SettingsScreen();
                 default:
                     return null;
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
         @Override
