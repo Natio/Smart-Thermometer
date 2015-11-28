@@ -6,26 +6,9 @@
     tools:context="com.michead.smarterthermometer.MainActivity"
     android:id="@+id/srl">
 
-    <LinearLayout
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/line_chart"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:weightSum="1">
-
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/line_chart"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.95" />
-
-
-        <SeekBar
-            android:layout_width="match_parent"
-            android:layout_weight="0.05"
-            android:layout_height="0dp"
-            android:layout_gravity="center"
-            android:id="@+id/temp_size" />
-
-    </LinearLayout>
+        android:layout_height="match_parent" />
 
 </android.support.v4.widget.SwipeRefreshLayout>

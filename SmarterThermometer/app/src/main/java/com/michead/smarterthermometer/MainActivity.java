@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
         viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(pagerAdapter);
-        // viewPager.addOnPageChangeListener(this); FIXME Not hooked
+        viewPager.addOnPageChangeListener(this);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     public static class STPagerAdapter extends FragmentPagerAdapter {
 
-        private static final String[] headers = {"Main screen"};
+        private static final String[] headers = {"Chart", "Statistics", "Settings"};
 
         public STPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                     return new STMainScreen();
                 case 1:
                     return new StatisticsScreen();
+                case 2:
+                    return new SettingsScreen();
                 default:
                     return null;
             }
@@ -85,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
         @Override
         public int getCount() {
-            return 1;
+            return 2;
         }
 
         @Override

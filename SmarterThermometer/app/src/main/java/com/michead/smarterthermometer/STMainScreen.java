@@ -5,10 +5,8 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -23,8 +21,6 @@ import com.github.mikephil.charting.formatter.XAxisValueFormatter;
 import com.github.mikephil.charting.formatter.YAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.LineDataProvider;
-import com.github.mikephil.charting.listener.ChartTouchListener;
-import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
@@ -33,24 +29,20 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by Simone on 11/23/2015.
  */
 public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRefreshListener,
-                                                        SeekBar.OnSeekBarChangeListener,
-                                                        OnChartValueSelectedListener,
-                                                        OnChartGestureListener{
+                                                        OnChartValueSelectedListener {
 
-    private static final int MAX_SIZE = 24;
-    private static final int MIN_SIZE = 12;
     private static final int ANIM_TIME = 2000;
     private static final int CIRCLE_SIZE = 5;
     private static final float LINE_WIDTH = 2f;
     private static final float CUBIC_INTENSITY = 0.2f;
     private static final int FILL_LINE_POSITION = -20;
+    private static final int FILL_ALPHA = 100;
+    private static final int GRID_BACKGROUND_COLOR = Color.argb(50, 0, 0, 0);
 
     private static ArrayList<Entry> tempInEntries = new ArrayList<>();
     private static ArrayList<Entry> tempOutEntries = new ArrayList<>();
@@ -65,9 +57,6 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
     private SwipeRefreshLayout srl;
     private LineChart lc;
-    private SeekBar seekBar;
-
-    private int currentSize = MAX_SIZE;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -80,11 +69,6 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         lc = (LineChart)rootView.findViewById(R.id.line_chart);
         initChart();
 
-        seekBar = (SeekBar)rootView.findViewById(R.id.temp_size);
-        seekBar.setMax(MAX_SIZE - MIN_SIZE);
-        seekBar.setProgress(MAX_SIZE - MIN_SIZE);
-        seekBar.setOnSeekBarChangeListener(this);
-
         return rootView;
     }
 
@@ -94,7 +78,6 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         super.onResume();
 
         fetchData();
-        resizeChartData();
     }
 
     @Override
@@ -106,24 +89,25 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     public void initChart(){
         XAxis xAxis = lc.getXAxis();
         YAxis yAxisL = lc.getAxisLeft();
+        YAxis yAxisR = lc.getAxisRight();
 
-        // xAxis.setDrawGridLines(false);
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setValueFormatter(new TimestampFormatter());
-        xAxis.setSpaceBetweenLabels(1);
+        xAxis.setLabelsToSkip(3);
 
-        // yAxisL.setDrawGridLines(false);
+        yAxisL.setStartAtZero(false);
         yAxisL.setValueFormatter(new TemperatureFormatter());
+
+        yAxisR.setValueFormatter(new NoValueFormatter());
+        yAxisR.setDrawGridLines(false);
 
         lc.setAutoScaleMinMaxEnabled(true);
         lc.setDescription("");
         lc.setOnChartValueSelectedListener(this);
-        lc.setMaxVisibleValueCount(0); // lc.setMaxVisibleValueCount(MIN_SIZE * 4);
-        lc.setOnChartGestureListener(this);
+        lc.setMaxVisibleValueCount(0);
         lc.setHighlightPerTapEnabled(true);
         lc.setDrawGridBackground(true);
-        lc.setGridBackgroundColor(Color.argb(50, 0, 0, 0));
-        // lc.setPinchZoom(true); // TODO Check this
+        lc.setGridBackgroundColor(GRID_BACKGROUND_COLOR);
 
         Legend legend = lc.getLegend();
         legend.setEnabled(true);
@@ -173,8 +157,8 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         lineDataSets.clear();
         xLabels.clear();
 
-        LineDataSet lineInTemps = new LineDataSet((List)tempInEntries.clone(), "Temperature inside");
-        LineDataSet lineOutTemps = new LineDataSet((List)tempOutEntries.clone(), "Temperature outside");
+        LineDataSet lineInTemps = new LineDataSet(tempInEntries, "Temperature inside");
+        LineDataSet lineOutTemps = new LineDataSet(tempOutEntries, "Temperature outside");
 
         initLineDataSet(lineInTemps, true);
         initLineDataSet(lineOutTemps, false);
@@ -184,7 +168,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
         xLabels = getXLabels(timestamps);
 
-        resizeChartData();
+        invalidateChart(xLabels, lineDataSets);
     }
 
     public void initLineDataSet(LineDataSet lds, boolean isInside){
@@ -194,14 +178,14 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
             lds.setHighLightColor(Color.RED);
             lds.setColor(Color.RED);
             lds.setFillColor(Color.RED);
-            lds.setFillAlpha(100);
+            lds.setFillAlpha(FILL_ALPHA);
         }
         else{
             lds.setCircleColor(Color.BLUE);
             lds.setHighLightColor(Color.BLUE);
             lds.setColor(Color.BLUE);
             lds.setFillColor(Color.BLUE);
-            lds.setFillAlpha(100);
+            lds.setFillAlpha(FILL_ALPHA);
         }
 
         lds.setAxisDependency(YAxis.AxisDependency.LEFT);
@@ -229,37 +213,6 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         lc.invalidate();
     }
 
-    public synchronized void resizeChartData() {
-        Logger.getAnonymousLogger().log(Level.INFO, "Changing data size to " + currentSize);
-
-        if (currentSize < MIN_SIZE) currentSize = MIN_SIZE;
-        if (currentSize > MAX_SIZE) currentSize = MAX_SIZE;
-
-        int diff = currentSize - xLabels.size();
-
-        Logger.getAnonymousLogger().log(Level.INFO, "Difference in size: " + diff);
-
-        if (diff > 0) {
-            int index = xLabels.size();
-            while(xLabels.size() != currentSize){
-                xLabels.add(df.format(timestamps.get(index)));
-                lineDataSets.get(0).addEntry(tempInEntries.get(index));
-                lineDataSets.get(1).addEntry(tempOutEntries.get(index));
-                index++;
-            }
-        }
-        else if (diff < 0){
-            while(xLabels.size() != currentSize){
-                xLabels.remove(xLabels.size() - 1);
-                lineDataSets.get(0).removeLast();
-                lineDataSets.get(1).removeLast();
-            }
-        }
-
-        lc.notifyDataSetChanged();
-        invalidateChart(xLabels, lineDataSets);
-    }
-
     public List<String> getXLabels(List<Date> timestamps){
         List<String> xLabels = new ArrayList<>();
 
@@ -267,22 +220,6 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
             xLabels.add(df.format(timestamps.get(i)));
 
         return xLabels;
-    }
-
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        currentSize = progress + MIN_SIZE;
-        resizeChartData();
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
     }
 
     @Override
@@ -295,51 +232,11 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         String hour = fDate.split(" ")[1].split(":")[0] + ":" + fDate.split(" ")[1].split(":")[1];
 
         Toast.makeText(getActivity(), String.format("%.2f", e.getVal()) + "° " + location +
-                " on " + day + " at " + hour, Toast.LENGTH_LONG).show();
+                " on " + day + " at " + hour, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onNothingSelected() {
-
-    }
-
-    @Override
-    public void onChartGestureStart(MotionEvent motionEvent, ChartTouchListener.ChartGesture chartGesture) {
-
-    }
-
-    @Override
-    public void onChartGestureEnd(MotionEvent motionEvent, ChartTouchListener.ChartGesture chartGesture) {
-
-    }
-
-    @Override
-    public void onChartLongPressed(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public void onChartDoubleTapped(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public void onChartSingleTapped(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public void onChartFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-        // TODO
-    }
-
-    @Override
-    public void onChartScale(MotionEvent motionEvent, float v, float v1) {
-        // TODO
-    }
-
-    @Override
-    public void onChartTranslate(MotionEvent motionEvent, float v, float v1) {
 
     }
 
@@ -351,11 +248,19 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         }
     }
 
+    class NoValueFormatter implements YAxisValueFormatter {
+
+        @Override
+        public String getFormattedValue(float value, YAxis axis) {
+            return "";
+        }
+    }
+
     class TimestampFormatter implements XAxisValueFormatter {
 
         @Override
         public String getXValue(String original, int index, ViewPortHandler viewPortHandler) {
-            return original.split(" ")[1].split(":")[0];
+            return Integer.parseInt(original.split(" ")[1].split(":")[0]) + "h";
         }
     }
 }

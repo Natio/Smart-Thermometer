@@ -29,6 +29,7 @@ public class DataStore {
         ParseQuery<Temperature> query = ParseQuery.getQuery("Hour");
 
         query.addDescendingOrder("createdAt");
+        query.setLimit(Utils.MAX_QUERY_RESULT_SIZE);
 
         List<Temperature> queryResult = null;
 
