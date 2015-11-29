@@ -15,7 +15,7 @@ public class STApplication extends Application {
 
         Parse.enableLocalDatastore(this);
 
-        Parse.initialize(this, "GkfQgBEWhTwEWe6edrUDDt0sZ9DLPubO5HYrHBh7", "LeHrMeZQY2EfuDkQgfx8iyQL6NAS9uswZFFtpwcd");
+        Parse.initialize(this, Keys.PARSE_KEY_1, Keys.PARSE_KEY_2);
         ParseObject.registerSubclass(Temperature.class);
 
         ParseUser.enableAutomaticUser();

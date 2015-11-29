@@ -43,6 +43,9 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     private static final int FILL_LINE_POSITION = -20;
     private static final int FILL_ALPHA = 100;
     private static final int GRID_BACKGROUND_COLOR = Color.argb(50, 0, 0, 0);
+    private static final int LABELS_TO_SKIP = 3;
+    private static final int MAX_VISIBLE_VALUE_COUNT = 0;
+    private static final String CHART_DESCRIPTION = "";
 
     private static ArrayList<Entry> tempInEntries = new ArrayList<>();
     private static ArrayList<Entry> tempOutEntries = new ArrayList<>();
@@ -52,7 +55,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     private static List<String> xLabels = new ArrayList<>();
     private static List<LineDataSet> lineDataSets = new ArrayList<>();
 
-
+    @SuppressWarnings("all")
     private static final DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
     private SwipeRefreshLayout srl;
@@ -93,7 +96,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setValueFormatter(new TimestampFormatter());
-        xAxis.setLabelsToSkip(3);
+        xAxis.setLabelsToSkip(LABELS_TO_SKIP);
 
         yAxisL.setStartAtZero(false);
         yAxisL.setValueFormatter(new TemperatureFormatter());
@@ -102,12 +105,13 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         yAxisR.setDrawGridLines(false);
 
         lc.setAutoScaleMinMaxEnabled(true);
-        lc.setDescription("");
+        lc.setDescription(CHART_DESCRIPTION);
         lc.setOnChartValueSelectedListener(this);
-        lc.setMaxVisibleValueCount(0);
+        lc.setMaxVisibleValueCount(MAX_VISIBLE_VALUE_COUNT);
         lc.setHighlightPerTapEnabled(true);
         lc.setDrawGridBackground(true);
         lc.setGridBackgroundColor(GRID_BACKGROUND_COLOR);
+        lc.setDoubleTapToZoomEnabled(false);
 
         Legend legend = lc.getLegend();
         legend.setEnabled(true);
@@ -222,6 +226,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         return xLabels;
     }
 
+    @SuppressWarnings("all")
     @Override
     public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
         String location = (h.getDataSetIndex() == 0)? "inside" : "outside";
@@ -232,7 +237,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         String hour = fDate.split(" ")[1].split(":")[0] + ":" + fDate.split(" ")[1].split(":")[1];
 
         Toast.makeText(getActivity(), String.format("%.2f", e.getVal()) + "° " + location +
-                " on " + day + " at " + hour, Toast.LENGTH_SHORT).show();
+                " on " + day + " at " + hour, Toast.LENGTH_SHORT); // .show(); // TODO Check what to do with this
     }
 
     @Override

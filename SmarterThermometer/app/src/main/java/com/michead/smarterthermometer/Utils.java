@@ -33,13 +33,12 @@ public class Utils {
     public static final int MAX_QUERY_RESULT_SIZE = 24;
     public static final String LOCATION_KEY = "location";
     public static final String DEFAULT_LOCATION = "dublin";
+    public static final String TEXTVIEW_SEPARATOR = ": ";
 
     public static final String OPENWEATHER_LIST_KEY = "list";
     public static final String OPENWEATHER_MAIN_KEY = "main";
     public static final String OPENWEATHER_TEMP_KEY = "temp";
     public static final int OPENWEATHER_TOMORROW_SAME_TIME_INDEX = 7;
-
-    protected static final String OPENWEATHER_API_KEY = "2e292bad1e6b72870a2975759a06db52";
 
     public static String getCurrentLocation(Context context) {
 
@@ -91,7 +90,7 @@ public class Utils {
             StringBuilder sb = new StringBuilder();
             String request = "http://api.openweathermap.org/data/2.5/forecast?q=%1$2s,ie&appid=%2$2s&units=metric";
             Formatter formatter = new Formatter(sb, Locale.US);
-            formatter.format(request, Utils.getLocation(context), Utils.OPENWEATHER_API_KEY);
+            formatter.format(request, Utils.getLocation(context), Keys.OPENWEATHER_API_KEY);
 
             temperature = new AsyncGetRequestor().execute(sb.toString()).get();
         }
@@ -129,5 +128,16 @@ public class Utils {
 
             return temperature;
         }
+    }
+
+    public static String everyWordToUpperCase(String s) {
+        String[] arr = s.split(" |-");
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(Character.toUpperCase(arr[i].charAt(0))).append(arr[i].substring(1)).append(" "); // TODO Handle dash case
+        }
+
+        return sb.toString().trim();
     }
 }

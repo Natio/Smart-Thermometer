@@ -1,4 +1,18 @@
 <resources>
     <string name="app_name">SmarterThermometer</string>
     <string name="action_settings">Settings</string>
+    <string-array name="statistics">
+        <item name="min_temp_inside_today">Min temp inside in the last 24hrs</item>
+        <item name="max_temp_inside_today">Max temp inside in the last 24hrs</item>
+        <item name="min_temp_outside_today">Min temp outside in the last 24hrs</item>
+        <item name="max_temp_outside_today">Max temp outside in the last 24hrs</item>
+        <item name="temp_inside_thistime_today">Expected temp inside in 24hrs</item>
+        <item name="temp_outside_thistime_today">Temp outside in 24hrs</item>
+    </string-array>
+    <string-array name="settings">
+        <item name="location_toast">Sensor location set to</item>
+        <item name="invalid_location">Invalid location</item>
+        <item name="locaton_hint">Enter your sensor location</item>
+        <item name="locaton_title">Sensor location</item>
+    </string-array>
 </resources>

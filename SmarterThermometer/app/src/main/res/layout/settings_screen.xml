@@ -3,26 +3,39 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textAlignment="center"
-        android:textSize="24sp"
-        android:id="@+id/loc_title" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center" >
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textSize="22sp"
-        android:textAlignment="center"
-        android:id="@+id/location"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:id="@+id/loc_title" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:id="@+id/submit"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="22sp"
+            android:editable="true"
+            android:textAlignment="center"
+            android:id="@+id/location"
+            android:padding="30dp"
+            android:inputType="textNoSuggestions"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/submit"
+            android:background="@drawable/save_button_style"
+            android:layout_margin="30dp"/>
+
+    </LinearLayout>
 
 </LinearLayout>
