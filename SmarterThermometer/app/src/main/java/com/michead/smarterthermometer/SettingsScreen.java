@@ -40,7 +40,7 @@ public class SettingsScreen extends Fragment implements Button.OnClickListener {
 
         submitB = (Button)rootView.findViewById(R.id.submit);
         submitB.setOnClickListener(this);
-        submitB.setText("Save");
+        submitB.setText(res.getStringArray(R.array.settings)[4]);
         submitB.requestFocus();
 
         return rootView;

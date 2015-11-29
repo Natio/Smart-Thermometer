@@ -76,7 +76,7 @@ public class Utils {
         return loc_setting;
     }
 
-    @Deprecated
+    @SuppressWarnings("unused")
     public static int getCurrentHour(){
         Calendar calendar = Calendar.getInstance();
         return calendar.get(Calendar.HOUR_OF_DAY);

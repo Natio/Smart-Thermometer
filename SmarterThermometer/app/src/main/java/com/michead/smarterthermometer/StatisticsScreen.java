@@ -22,8 +22,8 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
 
     private static final String CELSIUS_DEGS = "°C";
     private static final int TV_TEXT_SIZE = 18;
-    private static final int TV_PADDING_V = 30;
-    private static final int TV_PADDING_H = 5;
+    private static final int TV_PADDING_V = 50;
+    private static final int TV_PADDING_H = 10;
 
     private static final DecimalFormat df = new DecimalFormat("#.00");
 

@@ -16,6 +16,9 @@ public class DataStore {
 
     private static DataStore instance;
 
+    private static final String TEMPERATURE_PARSE_OBJECT_KEY = "Hour";
+    private static final String TIMESTAMP_KEY = "createdAt";
+
     private List<Temperature> temps;
 
     private DataStore(){}
@@ -26,9 +29,9 @@ public class DataStore {
     }
 
     public List<Temperature> getTempsInRange(){
-        ParseQuery<Temperature> query = ParseQuery.getQuery("Hour");
+        ParseQuery<Temperature> query = ParseQuery.getQuery(TEMPERATURE_PARSE_OBJECT_KEY);
 
-        query.addDescendingOrder("createdAt");
+        query.addDescendingOrder(TIMESTAMP_KEY);
         query.setLimit(Utils.MAX_QUERY_RESULT_SIZE);
 
         List<Temperature> queryResult = null;
@@ -42,7 +45,6 @@ public class DataStore {
         }
 
         Collections.reverse(queryResult);
-
         temps = queryResult;
 
         return temps;

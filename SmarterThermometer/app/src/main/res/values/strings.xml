@@ -14,5 +14,6 @@
         <item name="invalid_location">Invalid location</item>
         <item name="locaton_hint">Enter your sensor location</item>
         <item name="locaton_title">Sensor location</item>
+        <item name="save_button">Save</item>
     </string-array>
 </resources>
