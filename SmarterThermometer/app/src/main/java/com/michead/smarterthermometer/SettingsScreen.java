@@ -51,6 +51,7 @@ public class SettingsScreen extends Fragment implements Button.OnClickListener {
         super.onResume();
 
         locationET.setText(Utils.everyWordToUpperCase(Utils.getLocation(getActivity())));
+        submitB.requestFocus();
     }
 
 
@@ -79,5 +80,7 @@ public class SettingsScreen extends Fragment implements Button.OnClickListener {
             inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
         catch(NullPointerException npe){}
+
+        submitB.requestFocus();
     }
 }
