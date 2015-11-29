@@ -133,7 +133,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         List<Temperature> temps = null;
 
         if (useCache) temps = DataStore.getInstance().getCachedTemps();
-        else temps = DataStore.getInstance().getTempsInRange();
+        else temps = DataStore.getInstance().getTemps();
 
         tempInEntries.clear();
         tempOutEntries.clear();

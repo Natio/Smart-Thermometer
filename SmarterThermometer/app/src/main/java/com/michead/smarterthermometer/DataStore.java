@@ -28,7 +28,7 @@ public class DataStore {
         return instance;
     }
 
-    public List<Temperature> getTempsInRange(){
+    public List<Temperature> getTemps(){
         ParseQuery<Temperature> query = ParseQuery.getQuery(TEMPERATURE_PARSE_OBJECT_KEY);
 
         query.addDescendingOrder(TIMESTAMP_KEY);

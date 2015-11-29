@@ -42,7 +42,7 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
 
         tvs.clear();
 
-        tvs.add((TextView)rootView.findViewById(R.id.today_min_in));
+        tvs.add((TextView) rootView.findViewById(R.id.today_min_in));
         tvs.add((TextView)rootView.findViewById(R.id.today_max_in));
         tvs.add((TextView)rootView.findViewById(R.id.today_min_out));
         tvs.add((TextView)rootView.findViewById(R.id.today_max_out));
@@ -50,7 +50,7 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
         tvs.add((TextView)rootView.findViewById(R.id.tomorrow_out_same_time));
 
         initTextViews();
-        updateStats();
+        updateStats(true);
 
         return rootView;
     }
@@ -75,26 +75,24 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
     public void onResume(){
         super.onResume();
 
-        // Overkill
-        /*
-        List<Temperature> temps = DataStore.getInstance().getCachedTemps();
-
-        updateTodayStats(temps);
-        updateTomorrowStats(temps);
-        */
+        // Probably an overkill
+        // updateStats(true);
     }
 
     @Override
     public void onRefresh() {
 
-        updateStats();
+        updateStats(false);
 
         srl.setRefreshing(false);
     }
 
-    public void updateStats(){
+    public void updateStats(boolean cached){
 
-        List<Temperature> temps = DataStore.getInstance().getCachedTemps();
+        List<Temperature> temps = null;
+
+        if (cached) DataStore.getInstance().getCachedTemps();
+        else DataStore.getInstance().getTemps();
 
         updateTodayStats(temps);
         updateTomorrowStats(temps);
