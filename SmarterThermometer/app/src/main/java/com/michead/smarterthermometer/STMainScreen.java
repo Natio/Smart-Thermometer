@@ -1,5 +1,6 @@
 package com.michead.smarterthermometer;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -158,11 +159,14 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
     public void refreshData(){
 
+        Resources res = getResources();
+        String[] legend_strings = res.getStringArray(R.array.chart);
+
         lineDataSets.clear();
         xLabels.clear();
 
-        LineDataSet lineInTemps = new LineDataSet(tempInEntries, "Temperature inside");
-        LineDataSet lineOutTemps = new LineDataSet(tempOutEntries, "Temperature outside");
+        LineDataSet lineInTemps = new LineDataSet(tempInEntries, legend_strings[0]);
+        LineDataSet lineOutTemps = new LineDataSet(tempOutEntries, legend_strings[1]);
 
         initLineDataSet(lineInTemps, true);
         initLineDataSet(lineOutTemps, false);

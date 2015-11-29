@@ -1,5 +1,6 @@
 package com.michead.smarterthermometer;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -78,9 +79,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     }
 
-    public static class STPagerAdapter extends FragmentPagerAdapter {
-
-        private static final String[] headers = {"Settings", "Chart", "Statistics"};
+    public class STPagerAdapter extends FragmentPagerAdapter {
 
         public STPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -107,6 +106,9 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
         @Override
         public CharSequence getPageTitle(int position) {
+            Resources res = MainActivity.this.getResources();
+            String[] headers = res.getStringArray(R.array.page_headers);
+
             return headers[position];
         }
     }

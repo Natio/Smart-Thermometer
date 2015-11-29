@@ -16,4 +16,13 @@
         <item name="locaton_title">Sensor location</item>
         <item name="save_button">Save</item>
     </string-array>
+    <string-array name="chart">
+        <item name="temp_inside">Temperature inside</item>
+        <item name="temp_outside">Temperature outside</item>
+    </string-array>
+    <string-array name="page_headers">
+        <item name="settings">Settings</item>
+        <item name="settings">Chart</item>
+        <item name="settings">Statistics</item>
+    </string-array>
 </resources>
