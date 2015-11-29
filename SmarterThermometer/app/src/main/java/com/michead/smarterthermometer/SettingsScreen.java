@@ -15,6 +15,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Created by Simone on 11/28/2015.
  */
@@ -79,7 +82,9 @@ public class SettingsScreen extends Fragment implements Button.OnClickListener {
             InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
-        catch(NullPointerException npe){}
+        catch(NullPointerException npe){
+            Logger.getAnonymousLogger().log(Level.SEVERE, npe.getMessage());
+        }
 
         submitB.requestFocus();
     }

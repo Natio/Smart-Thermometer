@@ -1,9 +1,9 @@
 package com.michead.smarterthermometer;
 
+import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -28,29 +28,31 @@ public class DataStore {
         return instance;
     }
 
-    public List<Temperature> getTemps(){
-        ParseQuery<Temperature> query = ParseQuery.getQuery(TEMPERATURE_PARSE_OBJECT_KEY);
-
-        query.addDescendingOrder(TIMESTAMP_KEY);
-        query.setLimit(Utils.MAX_QUERY_RESULT_SIZE);
-
-        List<Temperature> queryResult = null;
-
+    public void getTemps(FindCallback<Temperature> callback) {
         try {
-            queryResult = query.find();
-            Logger.getAnonymousLogger().log(Level.INFO, "Query result size: " + queryResult.size());
+
+            ParseQuery<Temperature> query = ParseQuery.getQuery(TEMPERATURE_PARSE_OBJECT_KEY);
+
+            query.addDescendingOrder(TIMESTAMP_KEY);
+            query.setLimit(Utils.MAX_QUERY_RESULT_SIZE);
+
+            if (callback == null){
+                List<Temperature> queryResult = query.find();
+                Collections.reverse(queryResult);
+                temps = queryResult;
+            }
+            else query.findInBackground(callback);
         }
         catch(ParseException pe){
             Logger.getAnonymousLogger().log(Level.SEVERE, pe.getMessage());
         }
-
-        Collections.reverse(queryResult);
-        temps = queryResult;
-
-        return temps;
     }
 
     public List<Temperature> getCachedTemps(){
         return temps;
+    }
+
+    public void setTemps(List<Temperature> temps){
+        this.temps = temps;
     }
 }

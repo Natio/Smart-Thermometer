@@ -14,7 +14,8 @@
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
-            android:background="#dadada" />
+            android:background="#dadada"
+            android:layout_marginTop="25dp"/>
 
         <TextView
             android:layout_width="match_parent"

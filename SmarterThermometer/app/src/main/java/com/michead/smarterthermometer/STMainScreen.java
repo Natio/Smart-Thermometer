@@ -24,10 +24,13 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.LineDataProvider;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.parse.FindCallback;
+import com.parse.ParseException;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -71,7 +74,9 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         srl.setOnRefreshListener(this);
 
         lc = (LineChart)rootView.findViewById(R.id.line_chart);
+
         initChart();
+        fetchData(true);
 
         return rootView;
     }
@@ -81,13 +86,13 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     public void onResume(){
         super.onResume();
 
-        fetchData();
+        // Probably overkill
+        // fetchData(true);
     }
 
     @Override
     public void onRefresh() {
-        fetchData();
-        srl.setRefreshing(false);
+        fetchData(false);
     }
 
     public void initChart(){
@@ -120,20 +125,27 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         legend.setPosition(Legend.LegendPosition.ABOVE_CHART_LEFT);
     }
 
-    public void fetchData(){
-        refreshTemps(false);
+    public void fetchData(boolean cached){
 
-        if (tempInEntries == null || tempOutEntries == null) refreshTemps(true);
+        if (!cached){
+            DataStore.getInstance().getTemps(new ChartFindCallback());
+            return;
+        }
+
+        refreshTemps();
 
         refreshData();
         animateLabels();
     }
 
-    public void refreshTemps (boolean useCache){
-        List<Temperature> temps = null;
+    public void refreshTemps (){
 
-        if (useCache) temps = DataStore.getInstance().getCachedTemps();
-        else temps = DataStore.getInstance().getTemps();
+        List<Temperature> temps = DataStore.getInstance().getCachedTemps();
+
+        if (temps == null){
+            fetchData(false);
+            return;
+        }
 
         tempInEntries.clear();
         tempOutEntries.clear();
@@ -151,6 +163,8 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
             i++;
         }
+
+        srl.setRefreshing(false);
     }
 
     public void animateLabels(){
@@ -270,6 +284,16 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         @Override
         public String getXValue(String original, int index, ViewPortHandler viewPortHandler) {
             return Integer.parseInt(original.split(" ")[1].split(":")[0]) + "h";
+        }
+    }
+
+    class ChartFindCallback implements FindCallback<Temperature>{
+
+        @Override
+        public void done(List<Temperature> objects, ParseException e) {
+            Collections.reverse(objects);
+            DataStore.getInstance().setTemps(objects);
+            fetchData(true);
         }
     }
 }

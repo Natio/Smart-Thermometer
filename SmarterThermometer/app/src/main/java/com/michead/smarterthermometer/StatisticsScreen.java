@@ -2,6 +2,7 @@ package com.michead.smarterthermometer;
 
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Html;
@@ -11,9 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.parse.FindCallback;
+import com.parse.ParseException;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Simone on 11/26/2015.
@@ -83,19 +89,20 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
     public void onRefresh() {
 
         updateStats(false);
-
-        srl.setRefreshing(false);
     }
 
     public void updateStats(boolean cached){
 
-        List<Temperature> temps = null;
+        if (cached) {
+            List<Temperature> temps = DataStore.getInstance().getCachedTemps();
 
-        if (cached) DataStore.getInstance().getCachedTemps();
-        else DataStore.getInstance().getTemps();
-
-        updateTodayStats(temps);
-        updateTomorrowStats(temps);
+            if (temps == null) updateStats(false);
+            else{
+                updateTodayStats(temps);
+                updateTomorrowStats(temps);
+            }
+        }
+        else DataStore.getInstance().getTemps(new StatisticsFindCallback());
     }
 
     public void updateTodayStats(List<Temperature> temps){
@@ -136,5 +143,20 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
     public void updateView(TextView tv, double val){
         String boldTemp = "<b>" + df.format(val) + CELSIUS_DEGS + "</b>";
         tv.setText(Html.fromHtml(tv.getText().toString().split(Utils.TEXTVIEW_SEPARATOR)[0] + Utils.TEXTVIEW_SEPARATOR + boldTemp));
+    }
+
+    class StatisticsFindCallback implements FindCallback<Temperature>{
+
+        @Override
+        public void done(List<Temperature> objects, ParseException e) {
+            Collections.reverse(objects);
+
+            updateTodayStats(objects);
+            updateTomorrowStats(objects);
+
+            DataStore.getInstance().setTemps(objects);
+
+            srl.setRefreshing(false);
+        }
     }
 }
