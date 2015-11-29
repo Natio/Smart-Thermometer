@@ -50,6 +50,7 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
         tvs.add((TextView)rootView.findViewById(R.id.tomorrow_out_same_time));
 
         initTextViews();
+        updateStats();
 
         return rootView;
     }
@@ -74,21 +75,29 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
     public void onResume(){
         super.onResume();
 
+        // Overkill
+        /*
         List<Temperature> temps = DataStore.getInstance().getCachedTemps();
 
         updateTodayStats(temps);
         updateTomorrowStats(temps);
+        */
     }
 
     @Override
     public void onRefresh() {
 
+        updateStats();
+
+        srl.setRefreshing(false);
+    }
+
+    public void updateStats(){
+
         List<Temperature> temps = DataStore.getInstance().getCachedTemps();
 
         updateTodayStats(temps);
         updateTomorrowStats(temps);
-
-        srl.setRefreshing(false);
     }
 
     public void updateTodayStats(List<Temperature> temps){
