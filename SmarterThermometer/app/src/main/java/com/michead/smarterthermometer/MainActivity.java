@@ -1,16 +1,22 @@
 package com.michead.smarterthermometer;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
+    private static final int PTS_TEXT_SIZE = 28;
+
+    PagerTitleStrip pagerTitleStrip;
     STPagerAdapter pagerAdapter;
     ViewPager viewPager;
 
@@ -25,6 +31,15 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         viewPager.setAdapter(pagerAdapter);
         viewPager.addOnPageChangeListener(this);
         viewPager.setCurrentItem(1);
+
+        pagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pts);
+        for (int counter = 0 ; counter<pagerTitleStrip.getChildCount(); counter++) {
+
+            if (pagerTitleStrip.getChildAt(counter) instanceof TextView) {
+                ((TextView)pagerTitleStrip.getChildAt(counter)).setTextSize(PTS_TEXT_SIZE);
+            }
+
+        }
     }
 
     @Override
@@ -64,9 +79,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     }
 
-    public static class STPagerAdapter extends FragmentPagerAdapter {
-
-        private static final String[] headers = {"Settings", "Chart", "Statistics"};
+    public class STPagerAdapter extends FragmentPagerAdapter {
 
         public STPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -93,6 +106,9 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
         @Override
         public CharSequence getPageTitle(int position) {
+            Resources res = MainActivity.this.getResources();
+            String[] headers = res.getStringArray(R.array.page_headers);
+
             return headers[position];
         }
     }

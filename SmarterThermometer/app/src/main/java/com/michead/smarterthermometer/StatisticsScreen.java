@@ -1,35 +1,41 @@
 package com.michead.smarterthermometer;
 
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.Html;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.parse.FindCallback;
+import com.parse.ParseException;
+
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Simone on 11/26/2015.
  */
 public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
-    private static final String TEXTVIEW_SEPARATOR = ": ";
     private static final String CELSIUS_DEGS = "°C";
+    private static final int TV_TEXT_SIZE = 18;
+    private static final int TV_PADDING_V = 50;
+    private static final int TV_PADDING_H = 10;
 
     private static final DecimalFormat df = new DecimalFormat("#.00");
 
     private SwipeRefreshLayout srl;
 
-    private TextView today_in_min;
-    private TextView today_in_max;
-    private TextView today_out_min;
-    private TextView today_out_max;
-
-    private TextView tomorrow_in_same_time;
-    private TextView tomorrow_out_same_time;
+    private List<TextView> tvs = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -40,49 +46,63 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
         srl = (SwipeRefreshLayout)rootView.findViewById(R.id.srl);
         srl.setOnRefreshListener(this);
 
-        today_in_min = (TextView)rootView.findViewById(R.id.today_min_in);
-        today_in_max = (TextView)rootView.findViewById(R.id.today_max_in);
-        today_out_min = (TextView)rootView.findViewById(R.id.today_min_out);
-        today_out_max = (TextView)rootView.findViewById(R.id.today_max_out);
+        tvs.clear();
 
-        tomorrow_in_same_time = (TextView)rootView.findViewById(R.id.tomorrow_in_same_time);
-        tomorrow_out_same_time = (TextView)rootView.findViewById(R.id.tomorrow_out_same_time);
+        tvs.add((TextView) rootView.findViewById(R.id.today_min_in));
+        tvs.add((TextView)rootView.findViewById(R.id.today_max_in));
+        tvs.add((TextView)rootView.findViewById(R.id.today_min_out));
+        tvs.add((TextView)rootView.findViewById(R.id.today_max_out));
+        tvs.add((TextView)rootView.findViewById(R.id.tomorrow_in_same_time));
+        tvs.add((TextView)rootView.findViewById(R.id.tomorrow_out_same_time));
 
         initTextViews();
+        updateStats(true);
 
         return rootView;
     }
 
     @SuppressWarnings("all")
     public void initTextViews(){
-        today_in_min.setText("Min temp inside today" + TEXTVIEW_SEPARATOR);
-        today_in_max.setText("Max temp inside today" + TEXTVIEW_SEPARATOR);
-        today_out_min.setText("Min temp outside today" + TEXTVIEW_SEPARATOR);
-        today_out_max.setText("Max temp outside today" + TEXTVIEW_SEPARATOR);
 
-        tomorrow_in_same_time.setText("Expected temperature inside tomorrow this time: " + TEXTVIEW_SEPARATOR);
-        tomorrow_out_same_time.setText("Expected temperature outside tomorrow this time: " + TEXTVIEW_SEPARATOR);
+        Resources res = getResources();
+        String[] strings = res.getStringArray(R.array.statistics);
+
+        for(int i = 0; i < tvs.size(); i++){
+            TextView tv = tvs.get(i);
+
+            tv.setText(strings[i] + Utils.TEXTVIEW_SEPARATOR);
+            tv.setTextSize(TV_TEXT_SIZE);
+            tv.setPadding(TV_PADDING_H, TV_PADDING_V, TV_PADDING_H, TV_PADDING_V);
+            tv.setGravity(Gravity.CLIP_HORIZONTAL);
+        }
     }
 
     @Override
     public void onResume(){
         super.onResume();
 
-        List<Temperature> temps = DataStore.getInstance().getCachedTemps();
-
-        updateTodayStats(temps);
-        updateTomorrowStats(temps);
+        // Probably an overkill
+        // updateStats(true);
     }
 
     @Override
     public void onRefresh() {
 
-        List<Temperature> temps = DataStore.getInstance().getCachedTemps();
+        updateStats(false);
+    }
 
-        updateTodayStats(temps);
-        updateTomorrowStats(temps);
+    public void updateStats(boolean cached){
 
-        srl.setRefreshing(false);
+        if (cached) {
+            List<Temperature> temps = DataStore.getInstance().getCachedTemps();
+
+            if (temps == null) updateStats(false);
+            else{
+                updateTodayStats(temps);
+                updateTomorrowStats(temps);
+            }
+        }
+        else DataStore.getInstance().getTemps(new StatisticsFindCallback());
     }
 
     public void updateTodayStats(List<Temperature> temps){
@@ -99,10 +119,10 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
             if (temp.getOutTemp() > maxOut) maxOut = temp.getOutTemp();
         }
 
-        updateView(today_in_min, minIn);
-        updateView(today_in_max, maxIn);
-        updateView(today_out_min, minOut);
-        updateView(today_out_max, maxOut);
+        updateView(tvs.get(0), minIn);
+        updateView(tvs.get(1), maxIn);
+        updateView(tvs.get(2), minOut);
+        updateView(tvs.get(3), maxOut);
     }
 
     public void updateTomorrowStats(List<Temperature> temps){
@@ -115,13 +135,28 @@ public class StatisticsScreen extends Fragment implements SwipeRefreshLayout.OnR
         double tomorrowTempOut = Utils.getWeatherForecastForTomorrowThisTime(getActivity());
         double tomorrowTempIn = tomorrowTempOut + diff;
 
-        updateView(tomorrow_in_same_time, tomorrowTempIn);
-        updateView(tomorrow_out_same_time, tomorrowTempOut);
+        updateView(tvs.get(4), tomorrowTempIn);
+        updateView(tvs.get(5), tomorrowTempOut);
     }
 
     @SuppressWarnings("all")
     public void updateView(TextView tv, double val){
+        String boldTemp = "<b>" + df.format(val) + CELSIUS_DEGS + "</b>";
+        tv.setText(Html.fromHtml(tv.getText().toString().split(Utils.TEXTVIEW_SEPARATOR)[0] + Utils.TEXTVIEW_SEPARATOR + boldTemp));
+    }
 
-        tv.setText(  tv.getText().toString().split(TEXTVIEW_SEPARATOR)[0] + TEXTVIEW_SEPARATOR + df.format(val) + CELSIUS_DEGS);
+    class StatisticsFindCallback implements FindCallback<Temperature>{
+
+        @Override
+        public void done(List<Temperature> objects, ParseException e) {
+            Collections.reverse(objects);
+
+            updateTodayStats(objects);
+            updateTomorrowStats(objects);
+
+            DataStore.getInstance().setTemps(objects);
+
+            srl.setRefreshing(false);
+        }
     }
 }

@@ -24,6 +24,8 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Simone on 11/28/2015.
@@ -33,13 +35,12 @@ public class Utils {
     public static final int MAX_QUERY_RESULT_SIZE = 24;
     public static final String LOCATION_KEY = "location";
     public static final String DEFAULT_LOCATION = "dublin";
+    public static final String TEXTVIEW_SEPARATOR = ": ";
 
     public static final String OPENWEATHER_LIST_KEY = "list";
     public static final String OPENWEATHER_MAIN_KEY = "main";
     public static final String OPENWEATHER_TEMP_KEY = "temp";
     public static final int OPENWEATHER_TOMORROW_SAME_TIME_INDEX = 7;
-
-    protected static final String OPENWEATHER_API_KEY = "2e292bad1e6b72870a2975759a06db52";
 
     public static String getCurrentLocation(Context context) {
 
@@ -53,8 +54,12 @@ public class Utils {
             List<Address> addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
             loc = addresses.get(0).getLocality();
         }
-        catch(SecurityException se){}
-        catch(IOException ioe){}
+        catch(SecurityException se){
+            Logger.getAnonymousLogger().log(Level.SEVERE, se.getMessage());
+        }
+        catch(IOException ioe){
+            Logger.getAnonymousLogger().log(Level.SEVERE, ioe.getMessage());
+        }
 
         if (loc == null || loc.equals(""))
             return Utils.DEFAULT_LOCATION;
@@ -77,7 +82,7 @@ public class Utils {
         return loc_setting;
     }
 
-    @Deprecated
+    @SuppressWarnings("unused")
     public static int getCurrentHour(){
         Calendar calendar = Calendar.getInstance();
         return calendar.get(Calendar.HOUR_OF_DAY);
@@ -91,12 +96,16 @@ public class Utils {
             StringBuilder sb = new StringBuilder();
             String request = "http://api.openweathermap.org/data/2.5/forecast?q=%1$2s,ie&appid=%2$2s&units=metric";
             Formatter formatter = new Formatter(sb, Locale.US);
-            formatter.format(request, Utils.getLocation(context), Utils.OPENWEATHER_API_KEY);
+            formatter.format(request, Utils.getLocation(context), Keys.OPENWEATHER_API_KEY);
 
             temperature = new AsyncGetRequestor().execute(sb.toString()).get();
         }
-        catch(ExecutionException ee){}
-        catch(InterruptedException ie){}
+        catch(ExecutionException ee){
+            Logger.getAnonymousLogger().log(Level.SEVERE, ee.getMessage());
+        }
+        catch(InterruptedException ie){
+            Logger.getAnonymousLogger().log(Level.SEVERE, ie.getMessage());
+        }
 
         return temperature;
     }
@@ -124,10 +133,25 @@ public class Utils {
                 JSONObject main = (JSONObject)tomorrow.get(Utils.OPENWEATHER_MAIN_KEY);
                 temperature = main.getDouble(Utils.OPENWEATHER_TEMP_KEY);
             }
-            catch(IOException ioe){}
-            catch(JSONException je){}
+            catch(IOException ioe){
+                Logger.getAnonymousLogger().log(Level.SEVERE, ioe.getMessage());
+            }
+            catch(JSONException je){
+                Logger.getAnonymousLogger().log(Level.SEVERE, je.getMessage());
+            }
 
             return temperature;
         }
+    }
+
+    public static String everyWordToUpperCase(String s) {
+        String[] arr = s.split(" |-");
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(Character.toUpperCase(arr[i].charAt(0))).append(arr[i].substring(1)).append(" "); // TODO Handle dash case
+        }
+
+        return sb.toString().trim();
     }
 }

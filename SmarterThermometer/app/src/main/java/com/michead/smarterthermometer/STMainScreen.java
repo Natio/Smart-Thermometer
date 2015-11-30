@@ -1,5 +1,6 @@
 package com.michead.smarterthermometer;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,10 +24,13 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.LineDataProvider;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.parse.FindCallback;
+import com.parse.ParseException;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -43,6 +47,9 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     private static final int FILL_LINE_POSITION = -20;
     private static final int FILL_ALPHA = 100;
     private static final int GRID_BACKGROUND_COLOR = Color.argb(50, 0, 0, 0);
+    private static final int LABELS_TO_SKIP = 3;
+    private static final int MAX_VISIBLE_VALUE_COUNT = 0;
+    private static final String CHART_DESCRIPTION = "";
 
     private static ArrayList<Entry> tempInEntries = new ArrayList<>();
     private static ArrayList<Entry> tempOutEntries = new ArrayList<>();
@@ -52,7 +59,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     private static List<String> xLabels = new ArrayList<>();
     private static List<LineDataSet> lineDataSets = new ArrayList<>();
 
-
+    @SuppressWarnings("all")
     private static final DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
     private SwipeRefreshLayout srl;
@@ -67,7 +74,9 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         srl.setOnRefreshListener(this);
 
         lc = (LineChart)rootView.findViewById(R.id.line_chart);
+
         initChart();
+        fetchData(true);
 
         return rootView;
     }
@@ -77,13 +86,13 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
     public void onResume(){
         super.onResume();
 
-        fetchData();
+        // Probably overkill
+        // fetchData(true);
     }
 
     @Override
     public void onRefresh() {
-        fetchData();
-        srl.setRefreshing(false);
+        fetchData(false);
     }
 
     public void initChart(){
@@ -93,7 +102,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setValueFormatter(new TimestampFormatter());
-        xAxis.setLabelsToSkip(3);
+        xAxis.setLabelsToSkip(LABELS_TO_SKIP);
 
         yAxisL.setStartAtZero(false);
         yAxisL.setValueFormatter(new TemperatureFormatter());
@@ -102,12 +111,13 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         yAxisR.setDrawGridLines(false);
 
         lc.setAutoScaleMinMaxEnabled(true);
-        lc.setDescription("");
+        lc.setDescription(CHART_DESCRIPTION);
         lc.setOnChartValueSelectedListener(this);
-        lc.setMaxVisibleValueCount(0);
+        lc.setMaxVisibleValueCount(MAX_VISIBLE_VALUE_COUNT);
         lc.setHighlightPerTapEnabled(true);
         lc.setDrawGridBackground(true);
         lc.setGridBackgroundColor(GRID_BACKGROUND_COLOR);
+        lc.setDoubleTapToZoomEnabled(false);
 
         Legend legend = lc.getLegend();
         legend.setEnabled(true);
@@ -115,20 +125,27 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         legend.setPosition(Legend.LegendPosition.ABOVE_CHART_LEFT);
     }
 
-    public void fetchData(){
-        refreshTemps(false);
+    public void fetchData(boolean cached){
 
-        if (tempInEntries == null || tempOutEntries == null) refreshTemps(true);
+        if (!cached){
+            DataStore.getInstance().getTemps(new ChartFindCallback());
+            return;
+        }
+
+        refreshTemps();
 
         refreshData();
         animateLabels();
     }
 
-    public void refreshTemps (boolean useCache){
-        List<Temperature> temps = null;
+    public void refreshTemps (){
 
-        if (useCache) temps = DataStore.getInstance().getCachedTemps();
-        else temps = DataStore.getInstance().getTempsInRange();
+        List<Temperature> temps = DataStore.getInstance().getCachedTemps();
+
+        if (temps == null){
+            fetchData(false);
+            return;
+        }
 
         tempInEntries.clear();
         tempOutEntries.clear();
@@ -146,6 +163,8 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
             i++;
         }
+
+        srl.setRefreshing(false);
     }
 
     public void animateLabels(){
@@ -154,11 +173,14 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
 
     public void refreshData(){
 
+        Resources res = getResources();
+        String[] legend_strings = res.getStringArray(R.array.chart);
+
         lineDataSets.clear();
         xLabels.clear();
 
-        LineDataSet lineInTemps = new LineDataSet(tempInEntries, "Temperature inside");
-        LineDataSet lineOutTemps = new LineDataSet(tempOutEntries, "Temperature outside");
+        LineDataSet lineInTemps = new LineDataSet(tempInEntries, legend_strings[0]);
+        LineDataSet lineOutTemps = new LineDataSet(tempOutEntries, legend_strings[1]);
 
         initLineDataSet(lineInTemps, true);
         initLineDataSet(lineOutTemps, false);
@@ -222,6 +244,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         return xLabels;
     }
 
+    @SuppressWarnings("all")
     @Override
     public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
         String location = (h.getDataSetIndex() == 0)? "inside" : "outside";
@@ -232,7 +255,7 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         String hour = fDate.split(" ")[1].split(":")[0] + ":" + fDate.split(" ")[1].split(":")[1];
 
         Toast.makeText(getActivity(), String.format("%.2f", e.getVal()) + "° " + location +
-                " on " + day + " at " + hour, Toast.LENGTH_SHORT).show();
+                " on " + day + " at " + hour, Toast.LENGTH_SHORT); // .show(); // TODO Check what to do with this
     }
 
     @Override
@@ -261,6 +284,16 @@ public class STMainScreen extends Fragment implements   SwipeRefreshLayout.OnRef
         @Override
         public String getXValue(String original, int index, ViewPortHandler viewPortHandler) {
             return Integer.parseInt(original.split(" ")[1].split(":")[0]) + "h";
+        }
+    }
+
+    class ChartFindCallback implements FindCallback<Temperature>{
+
+        @Override
+        public void done(List<Temperature> objects, ParseException e) {
+            Collections.reverse(objects);
+            DataStore.getInstance().setTemps(objects);
+            fetchData(true);
         }
     }
 }
