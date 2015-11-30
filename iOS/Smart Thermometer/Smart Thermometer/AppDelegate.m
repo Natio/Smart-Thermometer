@@ -16,6 +16,8 @@
 
 @interface AppDelegate () <WCSessionDelegate>
 @property (nonatomic, strong) WCSession *session;
+@property (nonatomic, strong) ViewController *viewController;
+@property (nonatomic, strong) NSTimer *tempTimer;
 @end
 
 @implementation AppDelegate
@@ -84,6 +86,7 @@
 
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:[NSBundle mainBundle]];
     UIViewController *vc =[storyboard instantiateInitialViewController];
+    self.viewController = (ViewController *)vc;
     self.window.rootViewController = vc;
     [self.window makeKeyAndVisible];
     
@@ -126,6 +129,8 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    [self.tempTimer invalidate];
+    self.tempTimer = nil;
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -134,6 +139,10 @@
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    [self.tempTimer invalidate];
+    self.tempTimer = [NSTimer timerWithTimeInterval:60 target:self.viewController selector:@selector(reloadTempertures) userInfo:nil repeats:YES];
+    [[NSRunLoop mainRunLoop] addTimer:self.tempTimer forMode:NSDefaultRunLoopMode];
+    [self.tempTimer fire];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {

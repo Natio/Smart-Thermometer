@@ -41,6 +41,10 @@
     [self fetchAndSetForecast];
 }
 
+- (void)reloadTempertures{
+    [self refreshTemperatureData];
+}
+
 - (void)loadGraphData{
     
     NSDate *now = [NSDate date];
@@ -114,7 +118,7 @@
                 aggregate_difference += inside_temp - outside_temp;
             }
             float avg_difference = aggregate_difference/objects.count;
-            NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/forecast?q=dublin,ie&appid=%s&units=metric", WEATHER_API_KEY];
+            NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/forecast?q=dublin,ie&appid=%@&units=metric", WEATHER_API_KEY];
             __block float forecast_temp;
             NSURLSessionDataTask *URLSessionDataTask = [[NSURLSession sharedSession] dataTaskWithURL:[NSURL URLWithString:URLString]
                                                                                    completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
@@ -172,7 +176,7 @@
 }
 
 - (void)fetchAndSetWeather{
-    NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/weather?q=dublin,ie&appid=%s", WEATHER_API_KEY];
+    NSString *URLString =[NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/weather?q=dublin,ie&appid=%@", WEATHER_API_KEY];
     NSURLSessionDataTask *URLSessionDataTask = [[NSURLSession sharedSession] dataTaskWithURL:[NSURL URLWithString:URLString]
                                 completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
                                     if (error) {

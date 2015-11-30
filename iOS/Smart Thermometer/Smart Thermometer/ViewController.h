@@ -15,6 +15,7 @@
 
 @interface ViewController : UIViewController<UIPickerViewDataSource, UIPickerViewDelegate>
 
+- (void)reloadTempertures;
 
 @end
 
