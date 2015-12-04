@@ -136,6 +136,21 @@ Parse.Cloud.afterSave("Temperatures", function(request, response) {
   t.set("mins", mins);
   t.save(null, {
     success: function(newObj) {
+		if(outside_temp > 40 || outside_temp < 0 || inside_temp > 25 || inside_temp < 16){
+			Parse.Cloud.httpRequest({
+			  method: 'POST',
+			  url: 'https://maker.ifttt.com/trigger/temperature/with/key/c-E6bq2keNGTUMeMTUAgPi',
+			  body: {
+			    value1: inside_temp,
+			    value2: outside_temp
+			  }
+			}).then(function(httpResponse) {
+			  console.log(httpResponse.text);
+			}, function(httpResponse) {
+			  console.error('Request failed with response code ' + httpResponse.status);
+			});
+		}
+		
         updateHourlyForecast((hour + 1) % 24, mins);
     },
     error: function(newObj, error) {
