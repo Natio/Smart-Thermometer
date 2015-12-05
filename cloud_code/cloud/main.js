@@ -1,6 +1,8 @@
 var FORECAST_ID = "faJZwaD5nj"
 var FORECAST_SAMPLE_SIZE = 5;
 var EPS = 4
+var PUSH_COOLDOWN = 6000000
+var PUSH_TIMESTAMP_ID = "fESj6K5rjm"
 
 function createHourRecord(year,month,day,h, callback){
   var Hour = Parse.Object.extend("Hour");
@@ -112,6 +114,41 @@ function isParseObjectNew(object){
   return seconds < 10;
 }
 
+function updatePushTimestamp(){
+  var PushTimestamp = Parse.Object.extend("PushTimestamp");
+  var pushTimestamp = new PushTimestamp();
+
+  pushTimestamp.id = PUSH_TIMESTAMP_ID;
+  pushTimestamp.set("timestamp", Date.now());
+  pushTimestamp.save(null, {
+    success: function(newObj) {
+    },
+    error: function(newObj, error) {
+      console.error('Failed to update forecast: ' + error.message);
+    }
+  });
+}
+
+function pushToAndroidDevices(temp, isInside){
+  var location = isInside ? "inside" : "outside";
+  var message = temp + "°C " + location + "!";
+
+  ParseQuery<ParseInstallation> pushQuery = ParseInstallation.getQuery();
+  pushQuery.whereEqualTo("deviceType", "android");
+
+  Parse.Push.send({
+    where: pushQuery,
+    data: {
+       alert: message
+    }
+  }, {
+    success: function() {
+    }, error: function(error) {
+     console.error("Push notification failed.");
+    }
+  });
+}
+
 Parse.Cloud.afterSave("Temperatures", function(request, response) {
   var t = request.object;
   var creation_time = t.get("createdAt");
@@ -131,12 +168,28 @@ Parse.Cloud.afterSave("Temperatures", function(request, response) {
   if(t.get("hour") === hour && t.get("mins") === mins) {
     return;
   }
-  
+
+  var lastPushTimestamp = PUSH_COOLDOWN + 1;
+
   t.set("hour", hour);
   t.set("mins", mins);
   t.save(null, {
     success: function(newObj) {
-		if(outside_temp > 40 || outside_temp < 0 || inside_temp > 25 || inside_temp < 16){
+
+    var PushTimestamp = Parse.Object.extend("PushTimestamp");
+    var query = new Parse.Query(PushTimestamp);
+    query.find({
+      success: function(results) {
+          if(results.length > 0){
+            lastPushTimestamp = results[0].get('timestamp');
+          }
+        },
+        error: function(newObj, error) {
+          console.error('Failed to update forecast: ' + error.message);
+        }
+    });
+
+		if((Date.now() - lastPushTimestamp) > PUSH_COOLDOWN && outside_temp > 40 || outside_temp < 0 || inside_temp > 25 || inside_temp < 16){
 			Parse.Cloud.httpRequest({
 			  method: 'POST',
 			  url: 'https://maker.ifttt.com/trigger/temperature/with/key/c-E6bq2keNGTUMeMTUAgPi',
@@ -146,11 +199,16 @@ Parse.Cloud.afterSave("Temperatures", function(request, response) {
 			  }
 			}).then(function(httpResponse) {
 			  console.log(httpResponse.text);
+        updatePushTimestamp();
 			}, function(httpResponse) {
 			  console.error('Request failed with response code ' + httpResponse.status);
 			});
+
+      var isInside = inside_temp > 25 || inside_temp < 16;
+      if (isInside) pushToAndroidDevices(inside_temp, true);
+      else pushToAndroidDevices(outside_temp, false);
 		}
-		
+
         updateHourlyForecast((hour + 1) % 24, mins);
     },
     error: function(newObj, error) {
